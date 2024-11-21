@@ -6,38 +6,94 @@ output: html_document
 ---
 
 ```{r}
-#Library import
-library(ggplot2)
-library(dplyr)
-
 # Load necessary libraries
 library(ggplot2)
+library(dplyr)
+library(DataExplorer)
 
 # Load the dataset
 data <- read.csv("car_price.csv")
 
-# Select numeric columns
-numeric_cols <- data[sapply(data, is.numeric)]
+# --- Data Profiling ---
 
-# Create a boxplot for each numeric column
-for (col_name in colnames(numeric_cols)) {
-  # Create the boxplot using tidy evaluation
-  plot <- ggplot(data, aes(x = "", y = .data[[col_name]])) +
-    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 2) +
-    labs(title = paste("Boxplot of", col_name), y = col_name, x = "") +
-    theme_minimal()
-  
-  # Print the plot to view
-  print(plot)
+# Dataset dimensions
+cat("---- Dataset Overview ----\n")
+cat("Dataset dimensions: ", dim(data), "\n")  # Rows and columns
+cat("Column names: ", names(data), "\n")  # List of column names
+
+# Data types and structure
+cat("\n---- Data Types and Structure ----\n")
+print(str(data))  # Structure of the dataset
+
+# Summary statistics for numeric and categorical columns
+cat("\n---- Summary Statistics ----\n")
+print(summary(data))
+
+
+```
+
+```{r echo=TRUE}
+# --- Convert Data Types ---
+cat("\n---- Convert IDs and Categorical Columns to Appropriate Types ----\n")
+data$car_ID <- as.factor(data$car_ID)  # Assuming car_ID is an identifier
+data$symboling <- as.factor(data$symboling)  # Assuming symboling is a categorical variable
+data$fueltype <- as.factor(data$fueltype)
+data$aspiration <- as.factor(data$aspiration)
+data$doornumber <- as.factor(data$doornumber)
+data$carbody <- as.factor(data$carbody)
+data$drivewheel <- as.factor(data$drivewheel)
+data$enginelocation <- as.factor(data$enginelocation)
+data$enginetype <- as.factor(data$enginetype)
+data$cylindernumber <- as.factor(data$cylindernumber)
+data$fuelsystem <- as.factor(data$fuelsystem)
+
+
+
+```
+
+```{r echo=TRUE}
+# --- Check for Missing Values ---
+cat("\n---- Missing Values Check ----\n")
+
+missing_values <- colSums(is.na(data))
+cat("Missing values in each column:\n")
+print(missing_values)
+
+# --- Handling Missing Values ---
+cat("\n---- Handling Missing Values ----\n")
+
+# Numeric columns: Median imputation
+numeric_cols <- names(data)[sapply(data, is.numeric)]
+for (col in numeric_cols) {
+  if (sum(is.na(data[[col]])) > 0) {
+    data[[col]][is.na(data[[col]])] <- median(data[[col]], na.rm = TRUE)
+    cat(sprintf("Missing values in numeric column '%s' filled with median.\n", col))
+  }
 }
 
+# Categorical columns: Mode imputation
+categorical_cols <- names(data)[sapply(data, is.character)]
+for (col in categorical_cols) {
+  if (sum(is.na(data[[col]])) > 0) {
+    mode_value <- names(which.max(table(data[[col]], useNA = "no")))
+    data[[col]][is.na(data[[col]])] <- mode_value
+    cat(sprintf("Missing values in categorical column '%s' filled with mode '%s'.\n", col, mode_value))
+  }
+}
+
+# Final Check: Verify all missing values have been handled
+cat("\n---- Final Missing Values Check ----\n")
+final_missing_values <- colSums(is.na(data))
+cat("Remaining missing values in each column (should be 0):\n")
+print(final_missing_values)
+
 ```
 
-```{r}
-
-
-
+```{r echo=TRUE}
 
 
 
 ```
+
+
+
