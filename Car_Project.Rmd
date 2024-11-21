@@ -1,0 +1,43 @@
+---
+title: "RitProject_Project"
+author: "Mohammad Bin Haider"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+#Library import
+library(ggplot2)
+library(dplyr)
+
+# Load necessary libraries
+library(ggplot2)
+
+# Load the dataset
+data <- read.csv("car_price.csv")
+
+# Select numeric columns
+numeric_cols <- data[sapply(data, is.numeric)]
+
+# Create a boxplot for each numeric column
+for (col_name in colnames(numeric_cols)) {
+  # Create the boxplot using tidy evaluation
+  plot <- ggplot(data, aes(x = "", y = .data[[col_name]])) +
+    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 2) +
+    labs(title = paste("Boxplot of", col_name), y = col_name, x = "") +
+    theme_minimal()
+  
+  # Print the plot to view
+  print(plot)
+}
+
+```
+
+```{r}
+
+
+
+
+
+
+```
