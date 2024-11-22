@@ -1,7 +1,5 @@
-# RitProject
 
-
-# Fundamentals of Data Analytics - Project 1 (Fall 2024)
+# Fundamentals of Data Analytics - Project: **Predicting Car Prices**
 
 ## Overview
 This project aims to analyze the factors influencing the pricing of cars in the Middle East market for **BRIX Auto**, an automobile company looking to expand into the region. The project utilizes data analytics techniques to build and evaluate predictive models for car pricing.
@@ -14,7 +12,7 @@ This project aims to analyze the factors influencing the pricing of cars in the 
 ---
 
 ## Dataset
-- **Dataset Source**: Provided via MyCourses in the folder `Final Project/Project-1`.
+- **Dataset Source**: Provided via Github in the repository `MBinHaider/RitProject/car_price.csv`.
 - **Data Dictionary**: Also available in the same folder for understanding variable definitions.
 
 ---
@@ -39,29 +37,12 @@ The analysis follows the **CRISP-DM (Cross-Industry Standard Process for Data Mi
 
 ---
 
-## Submission
-- **Deadline**: November 26, 2024, by 11 PM.
-- **Submission Platform**: MyCourses.
-
----
-
-## Grading Criteria
-The project accounts for **30% of the final course mark** and will be evaluated based on:
-- **Methods**: Clear explanation and correct application of analytical techniques.
-- **Results**: Presentation and interpretation of findings.
-- **Critical Thinking**: Professional writing and evidence of thoughtful analysis.
-
----
-
 ## Contributors
-(Replace these placeholders with the actual names of the contributors.)
-1. [Contributor 1]
-2. [Contributor 2]
-3. [Contributor 3]
-4. [Contributor 4]
-5. [Contributor 5]
-6. [Contributor 6]
-7. [Contributor 7]
+1. Mohammad Bin Haider
+2. Suhil 
+3. Shikha
+4. Mahra
+
 
 ---
 
@@ -69,6 +50,11 @@ The project accounts for **30% of the final course mark** and will be evaluated 
 - Programming Language: Python or R (as applicable)
 - Libraries: Pandas, NumPy, Scikit-learn, ggplot2, etc.
 - IDE: RStudio or Jupyter Notebook
+
+---
+
+## License
+This project is for academic purposes only and is not intended for commercial use.
 
 ---
 
