@@ -91,8 +91,28 @@ print(final_missing_values)
 
 ```{r echo=TRUE}
 
+# --- Check for Duplicates ---
+cat("\n---- Checking for Duplicates ----\n")
 
+# Calculate the number of duplicate rows
+num_duplicates <- nrow(data) - nrow(dplyr::distinct(data))
+cat(sprintf("Number of duplicate rows: %d\n", num_duplicates))
 
+# --- Handling Duplicates ---
+cat("\n---- Handling Duplicate Rows ----\n")
+
+if (num_duplicates > 0) {
+  # Remove duplicate rows
+  data <- dplyr::distinct(data)
+  cat(sprintf("Duplicates removed. Number of rows after cleaning: %d\n", nrow(data)))
+} else {
+  cat("No duplicate rows found. Dataset remains unchanged.\n")
+}
+
+# Final Check: Verify no duplicates exist
+cat("\n---- Final Duplicate Check ----\n")
+final_num_duplicates <- nrow(data) - nrow(dplyr::distinct(data))
+cat(sprintf("Number of duplicate rows after handling : %d\n", final_num_duplicates))
 ```
 
 
