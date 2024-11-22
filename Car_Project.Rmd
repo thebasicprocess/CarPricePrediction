@@ -8,13 +8,23 @@ output:
 ---
 
 ```{r}
-# Load necessary libraries
-# Install tidyr if not already installed
+# --- Load Necessary Libraries ---
+cat("\n---- Loading Necessary Libraries ----\n")
+
+# Install and load libraries individually
 if (!require(tidyr)) install.packages("tidyr")
 library(tidyr)
+
+if (!require(ggplot2)) install.packages("ggplot2")
 library(ggplot2)
+
+if (!require(dplyr)) install.packages("dplyr")
 library(dplyr)
+
+if (!require(DataExplorer)) install.packages("DataExplorer")
 library(DataExplorer)
+
+cat("\nAll required libraries are ready to use.\n")
 
 # Load the dataset
 data <- read.csv("car_price.csv")
@@ -132,12 +142,15 @@ cat("\n---- Identifying Columns with Outliers ----\n")
 # Loop through numeric columns and create colorful boxplots
 numeric_cols <- names(data)[sapply(data, is.numeric)]
 
+# Store a copy of the original data for comparison
+data_original <- data
+
+# Visualize the original data (before handling outliers)
 for (col in numeric_cols) {
-  # Create and display a boxplot for each numeric column
-  plot <- ggplot(data, aes(x = "", y = .data[[col]])) +
-    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "skyblue", color = "darkblue") +
+  plot <- ggplot(data_original, aes(x = "Original Data", y = .data[[col]])) +
+    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "lightblue", color = "darkblue") +
     labs(
-      title = paste("Boxplot of", col, "- Outliers Highlighted"),
+      title = paste("Boxplot of", col, "- Original Data"),
       x = "", y = col
     ) +
     theme_minimal() +
@@ -190,6 +203,30 @@ for (col in numeric_cols) {
   }
 }
 
+
+# --- Compare Before and After Outlier Handling ---
+cat("\n---- Comparing Before and After Outlier Handling ----\n")
+
+for (col in numeric_cols) {
+  plot <- ggplot() +
+    geom_boxplot(data = data_original, aes(x = "Original Data", y = .data[[col]]), 
+                 outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "lightblue", color = "darkblue") +
+    geom_boxplot(data = data, aes(x = "After Capping", y = .data[[col]]), 
+                 outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "lightgreen", color = "darkblue") +
+    labs(
+      title = paste("Comparison of", col, "- Before and After Handling Outliers"),
+      x = "", y = col
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+      axis.title.y = element_text(size = 12, face = "bold"),
+      axis.text.y = element_text(size = 10)
+    ) +
+    scale_y_continuous(labels = scales::comma)  # Add commas for large numbers
+  
+  print(plot)
+}
 # --- Why Use Capping for Predicting Car Prices? ---
 cat("\n---- Why Use Capping for Predicting Car Prices? ----\n")
 cat(
@@ -360,3 +397,128 @@ cat(
   This analysis is crucial for understanding which numerical features have significant impacts on price."
 )
 ```
+
+
+```{r}
+# ---  Feature Engineering for Predicting Car Prices ---
+cat("\n----  Feature Engineering for Predicting Car Prices ----\n")
+
+library(dplyr)
+
+# 1. **Brand Value Feature**
+cat("\nCreating Brand Value Feature...\n")
+data <- data %>%
+  mutate(CarBrand = tolower(gsub(" .*", "", CarName)))  # Extract brand name from CarName
+
+# Standardize brand names
+brand_corrections <- c("maxda" = "mazda", "vw" = "volkswagen", "vokswagen" = "volkswagen", 
+                       "porcshce" = "porsche", "toyouta" = "toyota")
+data$CarBrand <- recode(data$CarBrand, !!!brand_corrections)
+
+# Create average price per brand as a feature
+brand_avg_price <- data %>%
+  group_by(CarBrand) %>%
+  summarise(BrandAvgPrice = mean(price, na.rm = TRUE), .groups = "drop")
+data <- data %>%
+  left_join(brand_avg_price, by = "CarBrand")
+
+cat("Brand value feature created.\n")
+
+# 2. **Engine Efficiency**
+cat("\nCalculating Engine Efficiency...\n")
+data <- data %>%
+  mutate(engine_efficiency = horsepower / enginesize)
+
+cat("Engine efficiency feature created.\n")
+
+# 3. **Luxury Indicator**
+cat("\nCreating a Luxury Indicator Feature...\n")
+luxury_threshold <- quantile(data$price, 0.85, na.rm = TRUE)
+data <- data %>%
+  mutate(is_luxury = as.factor(ifelse(price > luxury_threshold, "Yes", "No")))
+
+cat(sprintf("Luxury threshold for price: %.2f\n", luxury_threshold))
+cat("Luxury indicator feature created.\n")
+
+# 4. **Fuel Economy Score**
+cat("\nCalculating Fuel Economy Score...\n")
+data <- data %>%
+  mutate(fuel_economy_score = (citympg + highwaympg) / 2)
+
+cat("Fuel economy score feature created.\n")
+
+# 5. **Vehicle Age**
+cat("\nCalculating Age of Vehicle...\n")
+if ("year" %in% names(data)) {
+  data <- data %>%
+    mutate(year = as.numeric(year), 
+           car_age = 2024 - ifelse(!is.na(year), year, 2020))  # Replace 2024 with the current year
+} else {
+  cat("Column 'year' not found. Defaulting to a hypothetical age (2024 - 2020).\n")
+  data <- data %>%
+    mutate(car_age = 2024 - 2020)  # Defaulting car_age to a fixed value
+}
+
+cat("Vehicle age feature created.\n")
+
+# --- Saving the Cleaned and Feature-Enhanced Dataset ---
+cat("\n---- Saving the Feature-Enhanced Dataset ----\n")
+write.csv(data, "car_price_feature_engineered.csv", row.names = FALSE)
+cat("Dataset saved as 'car_price_feature_engineered.csv'.\n")
+```
+
+
+
+
+
+
+```{r}
+
+# --- Heatmap of Correlation with Price ---
+cat("\n---- Heatmap of Correlation with Price ----\n")
+
+# Select numerical columns, including price
+numeric_cols <- names(data)[sapply(data, is.numeric)]
+
+# Ensure 'price' is included in the numeric columns
+if (!"price" %in% numeric_cols) {
+  stop("Error: 'price' column must be numeric to calculate correlation.")
+}
+
+# Compute correlation matrix
+correlation_matrix <- cor(data[numeric_cols], use = "complete.obs")
+
+# Extract correlation of variables with 'price'
+price_correlation <- correlation_matrix["price", , drop = FALSE]  # Drop extra dimensions for clarity
+
+# Convert to a data frame for heatmap plotting
+correlation_df <- as.data.frame(as.table(price_correlation))
+
+# Visualize correlation with a heatmap
+library(ggplot2)
+ggplot(correlation_df, aes(x = Var2, y = Var1, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
+                       name = "Correlation") +
+  labs(
+    title = "Heatmap of Correlation with Price",
+    x = "Variable",
+    y = ""
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 14, face = "bold")
+  )
+```
+
+```{r }
+# --- Save Cleaned Data ---
+cat("\n---- Saving Cleaned Data ----\n")
+
+write.csv(data, "car_price_cleaned.csv", row.names = FALSE)
+cat("Cleaned dataset saved as 'car_price_cleaned.csv'.\n")
+```
+
