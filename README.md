@@ -1,5 +1,5 @@
 
-# Fundamentals of Data Analytics - Project: **Predicting Car Prices**
+# Fundamentals of Data Analytics - Project: Predicting Car Prices
 
 ## Overview
 This project aims to analyze the factors influencing the pricing of cars in the Middle East market for **BRIX Auto**, an automobile company looking to expand into the region. The project utilizes data analytics techniques to build and evaluate predictive models for car pricing.
@@ -50,11 +50,6 @@ The analysis follows the **CRISP-DM (Cross-Industry Standard Process for Data Mi
 - Programming Language: Python or R (as applicable)
 - Libraries: Pandas, NumPy, Scikit-learn, ggplot2, etc.
 - IDE: RStudio or Jupyter Notebook
-
----
-
-## License
-This project is for academic purposes only and is not intended for commercial use.
 
 ---
 
