@@ -89,6 +89,7 @@ print(final_missing_values)
 
 ```
 
+
 ```{r echo=TRUE}
 
 # --- Check for Duplicates ---
@@ -98,22 +99,100 @@ cat("\n---- Checking for Duplicates ----\n")
 num_duplicates <- nrow(data) - nrow(dplyr::distinct(data))
 cat(sprintf("Number of duplicate rows: %d\n", num_duplicates))
 
-# --- Handling Duplicates ---
-cat("\n---- Handling Duplicate Rows ----\n")
+# --- Handle Duplicates ---
+cat("\n---- Handling for Duplicates ----\n")
 
 if (num_duplicates > 0) {
-  # Remove duplicate rows
+  cat("\nDuplicates found. Removing duplicate rows...\n")
   data <- dplyr::distinct(data)
-  cat(sprintf("Duplicates removed. Number of rows after cleaning: %d\n", nrow(data)))
+  cat(sprintf("Duplicates removed. Remaining rows: %d\n", nrow(data)))
 } else {
-  cat("No duplicate rows found. Dataset remains unchanged.\n")
+  cat("\nNo duplicates found. Dataset remains unchanged.\n")
 }
 
-# Final Check: Verify no duplicates exist
+# --- Final Check ---
 cat("\n---- Final Duplicate Check ----\n")
 final_num_duplicates <- nrow(data) - nrow(dplyr::distinct(data))
-cat(sprintf("Number of duplicate rows after handling : %d\n", final_num_duplicates))
+if (final_num_duplicates == 0) {
+  cat("Success: No duplicate rows exist.\n")
+} else {
+  cat(sprintf("Warning: %d duplicate rows remain after handling.\n", final_num_duplicates))
+}
 ```
 
+```{r echo=TRUE}
+# --- Check Outliers in Numerical Columns ---
+cat("\n---- Identifying Columns with Outliers ----\n")
+
+# Loop through numeric columns and create colorful boxplots
+numeric_cols <- names(data)[sapply(data, is.numeric)]
+
+for (col in numeric_cols) {
+  # Create and display a boxplot for each numeric column
+  plot <- ggplot(data, aes(x = "", y = .data[[col]])) +
+    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "skyblue", color = "darkblue") +
+    labs(
+      title = paste("Boxplot of", col, "- Outliers Highlighted"),
+      x = "", y = col
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+      axis.title.y = element_text(size = 12, face = "bold"),
+      axis.text.y = element_text(size = 10)
+    ) +
+    scale_y_continuous(labels = scales::comma)  # Add commas for large numbers
+  
+  print(plot)
+}
+
+# --- Handling Outliers Using Capping ---
+cat("\n---- Handling Outliers Using Capping ----\n")
+
+# Function to identify outliers using the IQR method
+identify_outliers <- function(column) {
+  Q1 <- quantile(column, 0.25, na.rm = TRUE)  # First quartile (25th percentile)
+  Q3 <- quantile(column, 0.75, na.rm = TRUE)  # Third quartile (75th percentile)
+  IQR <- Q3 - Q1                             # Interquartile range
+  lower_bound <- Q1 - 1.5 * IQR              # Lower bound
+  upper_bound <- Q3 + 1.5 * IQR              # Upper bound
+  return(list(lower_bound = lower_bound, upper_bound = upper_bound))
+}
+
+# Handle outliers for each numeric column
+for (col in numeric_cols) {
+  # Identify bounds
+  bounds <- identify_outliers(data[[col]])
+  lower_bound <- bounds$lower_bound
+  upper_bound <- bounds$upper_bound
+  
+  # Count affected rows
+  outlier_indices <- which(data[[col]] < lower_bound | data[[col]] > upper_bound)
+  num_outliers <- length(outlier_indices)
+  total_values <- sum(!is.na(data[[col]]))  # Total non-NA values
+  outlier_percentage <- (num_outliers / total_values) * 100  # Calculate percentage
+  
+  if (num_outliers > 0) {
+    # Cap outliers to the lower and upper bounds
+    data[[col]][data[[col]] < lower_bound] <- lower_bound
+    data[[col]][data[[col]] > upper_bound] <- upper_bound
+    
+    # Log the results with improved formatting
+    cat(sprintf("Column: %-15s | Outliers: %-4d | Percentage: %-6.2f%% | Bounds: [%.2f, %.2f]\n",
+                col, num_outliers, outlier_percentage, lower_bound, upper_bound))
+  } else {
+    cat(sprintf("Column: %-15s | Outliers: None\n", col))
+  }
+}
+
+# --- Why Use Capping for Predicting Car Prices? ---
+cat("\n---- Why Use Capping for Predicting Car Prices? ----\n")
+cat(
+  "1. Outliers in car prices may represent rare but valid cases (e.g., luxury cars).\n",
+  "2. Removing outliers could result in the loss of important information critical for predicting prices.\n",
+  "3. Capping limits the influence of extreme values without discarding data, ensuring the model learns from all cases.\n"
+)
+
+```
 
 
