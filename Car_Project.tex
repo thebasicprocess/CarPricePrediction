@@ -1,0 +1,708 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={RitProject\_Project},
+  pdfauthor={Mohammad Bin Haider},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{RitProject\_Project}
+\author{Mohammad Bin Haider}
+\date{2024-11-22}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Load necessary libraries}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(dplyr)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'dplyr'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(DataExplorer)}
+
+\CommentTok{\# Load the dataset}
+\NormalTok{data }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"car\_price.csv"}\NormalTok{)}
+
+\CommentTok{\# {-}{-}{-} Data Profiling {-}{-}{-}}
+
+\CommentTok{\# Dataset dimensions}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"{-}{-}{-}{-} Dataset Overview {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## ---- Dataset Overview ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Dataset dimensions: "}\NormalTok{, }\FunctionTok{dim}\NormalTok{(data), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)  }\CommentTok{\# Rows and columns}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Dataset dimensions:  215 26
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Column names: "}\NormalTok{, }\FunctionTok{names}\NormalTok{(data), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)  }\CommentTok{\# List of column names}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Column names:  car_ID symboling CarName fueltype aspiration doornumber carbody drivewheel enginelocation wheelbase carlength carwidth carheight curbweight enginetype cylindernumber enginesize fuelsystem boreratio stroke compressionratio horsepower peakrpm citympg highwaympg price
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Data types and structure}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Data Types and Structure {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Data Types and Structure ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{str}\NormalTok{(data))  }\CommentTok{\# Structure of the dataset}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    215 obs. of  26 variables:
+##  $ car_ID          : num  1 2 3 4 5 6 7 8 9 NA ...
+##  $ symboling       : num  3 3 1 2 2 2 1 1 1 NA ...
+##  $ CarName         : chr  "alfa-romero giulia" "alfa-romero stelvio" "alfa-romero Quadrifoglio" "audi 100 ls" ...
+##  $ fueltype        : chr  "gas" "gas" "gas" "gas" ...
+##  $ aspiration      : chr  "std" "std" "std" "std" ...
+##  $ doornumber      : chr  "two" "two" "two" "four" ...
+##  $ carbody         : chr  "convertible" "convertible" "hatchback" "sedan" ...
+##  $ drivewheel      : chr  "rwd" "rwd" "rwd" "fwd" ...
+##  $ enginelocation  : chr  "front" "front" "front" "front" ...
+##  $ wheelbase       : num  88.6 88.6 94.5 99.8 99.4 ...
+##  $ carlength       : num  169 169 171 177 177 ...
+##  $ carwidth        : num  64.1 64.1 65.5 66.2 66.4 66.3 71.4 71.4 71.4 NA ...
+##  $ carheight       : num  48.8 48.8 52.4 54.3 54.3 53.1 55.7 55.7 55.9 NA ...
+##  $ curbweight      : num  2548 2548 2823 2337 2824 ...
+##  $ enginetype      : chr  "dohc" "dohc" "ohcv" "ohc" ...
+##  $ cylindernumber  : chr  "four" "four" "six" "four" ...
+##  $ enginesize      : num  130 130 152 109 136 136 136 136 131 NA ...
+##  $ fuelsystem      : chr  "mpfi" "mpfi" "mpfi" "mpfi" ...
+##  $ boreratio       : num  3.47 3.47 2.68 3.19 3.19 3.19 3.19 3.19 3.13 NA ...
+##  $ stroke          : num  2.68 2.68 3.47 3.4 3.4 3.4 3.4 3.4 3.4 NA ...
+##  $ compressionratio: num  9 9 9 10 8 8.5 8.5 8.5 8.3 NA ...
+##  $ horsepower      : num  111 111 154 102 115 110 110 110 140 NaN ...
+##  $ peakrpm         : num  5000 5000 5000 5500 5500 5500 5500 5500 5500 NA ...
+##  $ citympg         : num  21 21 19 24 18 19 19 19 17 NA ...
+##  $ highwaympg      : num  27 27 26 30 22 25 25 25 20 NA ...
+##  $ price           : num  13495 16500 16500 13950 17450 ...
+## NULL
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Summary statistics for numeric and categorical columns}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Summary Statistics {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Summary Statistics ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{summary}\NormalTok{(data))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      car_ID      symboling         CarName            fueltype        
+##  Min.   :  1   Min.   :-2.0000   Length:215         Length:215        
+##  1st Qu.: 50   1st Qu.: 0.0000   Class :character   Class :character  
+##  Median :103   Median : 1.0000   Mode  :character   Mode  :character  
+##  Mean   :102   Mean   : 0.8595                                        
+##  3rd Qu.:152   3rd Qu.: 2.0000                                        
+##  Max.   :205   Max.   : 3.0000                                        
+##  NA's   :30    NA's   :30                                             
+##   aspiration         doornumber          carbody           drivewheel       
+##  Length:215         Length:215         Length:215         Length:215        
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##                                                                             
+##                                                                             
+##                                                                             
+##                                                                             
+##  enginelocation       wheelbase        carlength        carwidth    
+##  Length:215         Min.   : 86.60   Min.   :144.6   Min.   :61.80  
+##  Class :character   1st Qu.: 94.50   1st Qu.:166.3   1st Qu.:64.00  
+##  Mode  :character   Median : 96.95   Median :173.2   Median :65.50  
+##                     Mean   : 98.77   Mean   :174.0   Mean   :65.92  
+##                     3rd Qu.:102.40   3rd Qu.:183.5   3rd Qu.:66.90  
+##                     Max.   :115.60   Max.   :202.6   Max.   :72.30  
+##                     NA's   :33       NA's   :30      NA's   :30     
+##    carheight      curbweight    enginetype        cylindernumber    
+##  Min.   :47.8   Min.   :1713   Length:215         Length:215        
+##  1st Qu.:51.6   1st Qu.:2145   Class :character   Class :character  
+##  Median :54.1   Median :2420   Mode  :character   Mode  :character  
+##  Mean   :53.7   Mean   :2556                                        
+##  3rd Qu.:55.5   3rd Qu.:2952                                        
+##  Max.   :59.8   Max.   :4066                                        
+##  NA's   :30     NA's   :30                                          
+##    enginesize      fuelsystem          boreratio         stroke     
+##  Min.   :-500.0   Length:215         Min.   :2.540   Min.   :2.070  
+##  1st Qu.:  94.5   Class :character   1st Qu.:3.150   1st Qu.:3.110  
+##  Median : 110.0   Mode  :character   Median :3.310   Median :3.270  
+##  Mean   :  99.9                      Mean   :3.325   Mean   :3.255  
+##  3rd Qu.: 143.0                      3rd Qu.:3.580   3rd Qu.:3.410  
+##  Max.   :2000.0                      Max.   :3.940   Max.   :4.170  
+##  NA's   :28                          NA's   :32      NA's   :30     
+##  compressionratio     horsepower        peakrpm        citympg     
+##  Min.   :   7.000   Min.   :-50.00   Min.   :4150   Min.   :13.00  
+##  1st Qu.:   8.675   1st Qu.: 69.00   1st Qu.:4800   1st Qu.:19.00  
+##  Median :   9.000   Median : 92.00   Median :5200   Median :24.00  
+##  Mean   :  67.985   Mean   : 95.95   Mean   :5142   Mean   :25.15  
+##  3rd Qu.:   9.432   3rd Qu.:116.00   3rd Qu.:5500   3rd Qu.:30.00  
+##  Max.   :1000.000   Max.   :288.00   Max.   :6600   Max.   :49.00  
+##  NA's   :27         NA's   :27       NA's   :30     NA's   :30     
+##    highwaympg        price      
+##  Min.   :16.00   Min.   :-1000  
+##  1st Qu.:25.00   1st Qu.: 7336  
+##  Median :30.00   Median : 9984  
+##  Mean   :30.63   Mean   :12451  
+##  3rd Qu.:34.00   3rd Qu.:16448  
+##  Max.   :54.00   Max.   :45400  
+##  NA's   :30      NA's   :27
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Convert Data Types {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Convert IDs and Categorical Columns to Appropriate Types {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Convert IDs and Categorical Columns to Appropriate Types ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{car\_ID }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{car\_ID)  }\CommentTok{\# Assuming car\_ID is an identifier}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{symboling }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{symboling)  }\CommentTok{\# Assuming symboling is a categorical variable}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{fueltype }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{fueltype)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{aspiration }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{aspiration)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{doornumber }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{doornumber)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{carbody }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{carbody)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{drivewheel }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{drivewheel)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{enginelocation }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{enginelocation)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{enginetype }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{enginetype)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{cylindernumber }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{cylindernumber)}
+\NormalTok{data}\SpecialCharTok{$}\NormalTok{fuelsystem }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(data}\SpecialCharTok{$}\NormalTok{fuelsystem)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Check for Missing Values {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Missing Values Check {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Missing Values Check ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{missing\_values }\OtherTok{\textless{}{-}} \FunctionTok{colSums}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(data))}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Missing values in each column:}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Missing values in each column:
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(missing\_values)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           car_ID        symboling          CarName         fueltype 
+##               30               30                0                0 
+##       aspiration       doornumber          carbody       drivewheel 
+##                0                0                0                0 
+##   enginelocation        wheelbase        carlength         carwidth 
+##                0               33               30               30 
+##        carheight       curbweight       enginetype   cylindernumber 
+##               30               30                0                0 
+##       enginesize       fuelsystem        boreratio           stroke 
+##               28                0               32               30 
+## compressionratio       horsepower          peakrpm          citympg 
+##               27               27               30               30 
+##       highwaympg            price 
+##               30               27
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Handling Missing Values {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Handling Missing Values {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Handling Missing Values ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Numeric columns: Median imputation}
+\NormalTok{numeric\_cols }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(data)[}\FunctionTok{sapply}\NormalTok{(data, is.numeric)]}
+\ControlFlowTok{for}\NormalTok{ (col }\ControlFlowTok{in}\NormalTok{ numeric\_cols) \{}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{sum}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(data[[col]])) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{    data[[col]][}\FunctionTok{is.na}\NormalTok{(data[[col]])] }\OtherTok{\textless{}{-}} \FunctionTok{median}\NormalTok{(data[[col]], }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+    \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Missing values in numeric column \textquotesingle{}\%s\textquotesingle{} filled with median.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, col))}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Missing values in numeric column 'wheelbase' filled with median.
+## Missing values in numeric column 'carlength' filled with median.
+## Missing values in numeric column 'carwidth' filled with median.
+## Missing values in numeric column 'carheight' filled with median.
+## Missing values in numeric column 'curbweight' filled with median.
+## Missing values in numeric column 'enginesize' filled with median.
+## Missing values in numeric column 'boreratio' filled with median.
+## Missing values in numeric column 'stroke' filled with median.
+## Missing values in numeric column 'compressionratio' filled with median.
+## Missing values in numeric column 'horsepower' filled with median.
+## Missing values in numeric column 'peakrpm' filled with median.
+## Missing values in numeric column 'citympg' filled with median.
+## Missing values in numeric column 'highwaympg' filled with median.
+## Missing values in numeric column 'price' filled with median.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Categorical columns: Mode imputation}
+\NormalTok{categorical\_cols }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(data)[}\FunctionTok{sapply}\NormalTok{(data, is.character)]}
+\ControlFlowTok{for}\NormalTok{ (col }\ControlFlowTok{in}\NormalTok{ categorical\_cols) \{}
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{sum}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(data[[col]])) }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{    mode\_value }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(}\FunctionTok{which.max}\NormalTok{(}\FunctionTok{table}\NormalTok{(data[[col]], }\AttributeTok{useNA =} \StringTok{"no"}\NormalTok{)))}
+\NormalTok{    data[[col]][}\FunctionTok{is.na}\NormalTok{(data[[col]])] }\OtherTok{\textless{}{-}}\NormalTok{ mode\_value}
+    \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Missing values in categorical column \textquotesingle{}\%s\textquotesingle{} filled with mode \textquotesingle{}\%s\textquotesingle{}.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, col, mode\_value))}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\CommentTok{\# Final Check: Verify all missing values have been handled}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Final Missing Values Check {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Final Missing Values Check ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{final\_missing\_values }\OtherTok{\textless{}{-}} \FunctionTok{colSums}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(data))}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Remaining missing values in each column (should be 0):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Remaining missing values in each column (should be 0):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(final\_missing\_values)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           car_ID        symboling          CarName         fueltype 
+##               30               30                0                0 
+##       aspiration       doornumber          carbody       drivewheel 
+##                0                0                0                0 
+##   enginelocation        wheelbase        carlength         carwidth 
+##                0                0                0                0 
+##        carheight       curbweight       enginetype   cylindernumber 
+##                0                0                0                0 
+##       enginesize       fuelsystem        boreratio           stroke 
+##                0                0                0                0 
+## compressionratio       horsepower          peakrpm          citympg 
+##                0                0                0                0 
+##       highwaympg            price 
+##                0                0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Check for Duplicates {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Checking for Duplicates {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Checking for Duplicates ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Calculate the number of duplicate rows}
+\NormalTok{num\_duplicates }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(data) }\SpecialCharTok{{-}} \FunctionTok{nrow}\NormalTok{(dplyr}\SpecialCharTok{::}\FunctionTok{distinct}\NormalTok{(data))}
+\FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Number of duplicate rows: \%d}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, num\_duplicates))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Number of duplicate rows: 28
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Handle Duplicates {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Handling for Duplicates {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Handling for Duplicates ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{if}\NormalTok{ (num\_duplicates }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{Duplicates found. Removing duplicate rows...}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{  data }\OtherTok{\textless{}{-}}\NormalTok{ dplyr}\SpecialCharTok{::}\FunctionTok{distinct}\NormalTok{(data)}
+  \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Duplicates removed. Remaining rows: \%d}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(data)))}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{No duplicates found. Dataset remains unchanged.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Duplicates found. Removing duplicate rows...
+## Duplicates removed. Remaining rows: 187
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Final Check {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Final Duplicate Check {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Final Duplicate Check ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{final\_num\_duplicates }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(data) }\SpecialCharTok{{-}} \FunctionTok{nrow}\NormalTok{(dplyr}\SpecialCharTok{::}\FunctionTok{distinct}\NormalTok{(data))}
+\ControlFlowTok{if}\NormalTok{ (final\_num\_duplicates }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+  \FunctionTok{cat}\NormalTok{(}\StringTok{"Success: No duplicate rows exist.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\NormalTok{\} }\ControlFlowTok{else}\NormalTok{ \{}
+  \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Warning: \%d duplicate rows remain after handling.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, final\_num\_duplicates))}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Success: No duplicate rows exist.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Check Outliers in Numerical Columns {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Identifying Columns with Outliers {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Identifying Columns with Outliers ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Loop through numeric columns and create colorful boxplots}
+\NormalTok{numeric\_cols }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(data)[}\FunctionTok{sapply}\NormalTok{(data, is.numeric)]}
+
+\ControlFlowTok{for}\NormalTok{ (col }\ControlFlowTok{in}\NormalTok{ numeric\_cols) \{}
+  \CommentTok{\# Create and display a boxplot for each numeric column}
+\NormalTok{  plot }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(data, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \StringTok{""}\NormalTok{, }\AttributeTok{y =}\NormalTok{ .data[[col]])) }\SpecialCharTok{+}
+    \FunctionTok{geom\_boxplot}\NormalTok{(}\AttributeTok{outlier.colour =} \StringTok{"red"}\NormalTok{, }\AttributeTok{outlier.shape =} \DecValTok{16}\NormalTok{, }\AttributeTok{outlier.size =} \DecValTok{3}\NormalTok{, }\AttributeTok{fill =} \StringTok{"skyblue"}\NormalTok{, }\AttributeTok{color =} \StringTok{"darkblue"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{labs}\NormalTok{(}
+      \AttributeTok{title =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Boxplot of"}\NormalTok{, col, }\StringTok{"{-} Outliers Highlighted"}\NormalTok{),}
+      \AttributeTok{x =} \StringTok{""}\NormalTok{, }\AttributeTok{y =}\NormalTok{ col}
+\NormalTok{    ) }\SpecialCharTok{+}
+    \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{theme}\NormalTok{(}
+      \AttributeTok{plot.title =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{hjust =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{, }\AttributeTok{size =} \DecValTok{14}\NormalTok{),}
+      \AttributeTok{axis.title.y =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{12}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{),}
+      \AttributeTok{axis.text.y =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =} \DecValTok{10}\NormalTok{)}
+\NormalTok{    ) }\SpecialCharTok{+}
+    \FunctionTok{scale\_y\_continuous}\NormalTok{(}\AttributeTok{labels =}\NormalTok{ scales}\SpecialCharTok{::}\NormalTok{comma)  }\CommentTok{\# Add commas for large numbers}
+  
+  \FunctionTok{print}\NormalTok{(plot)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-1.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-2.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-3.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-4.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-5.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-6.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-7.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-8.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-9.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-10.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-11.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-12.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-13.pdf}
+\includegraphics{Car_Project_files/figure-latex/unnamed-chunk-5-14.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Handling Outliers Using Capping {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Handling Outliers Using Capping {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Handling Outliers Using Capping ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Function to identify outliers using the IQR method}
+\NormalTok{identify\_outliers }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(column) \{}
+\NormalTok{  Q1 }\OtherTok{\textless{}{-}} \FunctionTok{quantile}\NormalTok{(column, }\FloatTok{0.25}\NormalTok{, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)  }\CommentTok{\# First quartile (25th percentile)}
+\NormalTok{  Q3 }\OtherTok{\textless{}{-}} \FunctionTok{quantile}\NormalTok{(column, }\FloatTok{0.75}\NormalTok{, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)  }\CommentTok{\# Third quartile (75th percentile)}
+\NormalTok{  IQR }\OtherTok{\textless{}{-}}\NormalTok{ Q3 }\SpecialCharTok{{-}}\NormalTok{ Q1                             }\CommentTok{\# Interquartile range}
+\NormalTok{  lower\_bound }\OtherTok{\textless{}{-}}\NormalTok{ Q1 }\SpecialCharTok{{-}} \FloatTok{1.5} \SpecialCharTok{*}\NormalTok{ IQR              }\CommentTok{\# Lower bound}
+\NormalTok{  upper\_bound }\OtherTok{\textless{}{-}}\NormalTok{ Q3 }\SpecialCharTok{+} \FloatTok{1.5} \SpecialCharTok{*}\NormalTok{ IQR              }\CommentTok{\# Upper bound}
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}\AttributeTok{lower\_bound =}\NormalTok{ lower\_bound, }\AttributeTok{upper\_bound =}\NormalTok{ upper\_bound))}
+\NormalTok{\}}
+
+\CommentTok{\# Handle outliers for each numeric column}
+\ControlFlowTok{for}\NormalTok{ (col }\ControlFlowTok{in}\NormalTok{ numeric\_cols) \{}
+  \CommentTok{\# Identify bounds}
+\NormalTok{  bounds }\OtherTok{\textless{}{-}} \FunctionTok{identify\_outliers}\NormalTok{(data[[col]])}
+\NormalTok{  lower\_bound }\OtherTok{\textless{}{-}}\NormalTok{ bounds}\SpecialCharTok{$}\NormalTok{lower\_bound}
+\NormalTok{  upper\_bound }\OtherTok{\textless{}{-}}\NormalTok{ bounds}\SpecialCharTok{$}\NormalTok{upper\_bound}
+  
+  \CommentTok{\# Count affected rows}
+\NormalTok{  outlier\_indices }\OtherTok{\textless{}{-}} \FunctionTok{which}\NormalTok{(data[[col]] }\SpecialCharTok{\textless{}}\NormalTok{ lower\_bound }\SpecialCharTok{|}\NormalTok{ data[[col]] }\SpecialCharTok{\textgreater{}}\NormalTok{ upper\_bound)}
+\NormalTok{  num\_outliers }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(outlier\_indices)}
+\NormalTok{  total\_values }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(data[[col]]))  }\CommentTok{\# Total non{-}NA values}
+\NormalTok{  outlier\_percentage }\OtherTok{\textless{}{-}}\NormalTok{ (num\_outliers }\SpecialCharTok{/}\NormalTok{ total\_values) }\SpecialCharTok{*} \DecValTok{100}  \CommentTok{\# Calculate percentage}
+  
+  \ControlFlowTok{if}\NormalTok{ (num\_outliers }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) \{}
+    \CommentTok{\# Cap outliers to the lower and upper bounds}
+\NormalTok{    data[[col]][data[[col]] }\SpecialCharTok{\textless{}}\NormalTok{ lower\_bound] }\OtherTok{\textless{}{-}}\NormalTok{ lower\_bound}
+\NormalTok{    data[[col]][data[[col]] }\SpecialCharTok{\textgreater{}}\NormalTok{ upper\_bound] }\OtherTok{\textless{}{-}}\NormalTok{ upper\_bound}
+    
+    \CommentTok{\# Log the results with improved formatting}
+    \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Column: \%{-}15s | Outliers: \%{-}4d | Percentage: \%{-}6.2f\%\% | Bounds: [\%.2f, \%.2f]}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,}
+\NormalTok{                col, num\_outliers, outlier\_percentage, lower\_bound, upper\_bound))}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+    \FunctionTok{cat}\NormalTok{(}\FunctionTok{sprintf}\NormalTok{(}\StringTok{"Column: \%{-}15s | Outliers: None}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{, col))}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Column: wheelbase       | Outliers: 6    | Percentage: 3.21  % | Bounds: [82.95, 113.75]
+## Column: carlength       | Outliers: None
+## Column: carwidth        | Outliers: 8    | Percentage: 4.28  % | Bounds: [60.00, 70.80]
+## Column: carheight       | Outliers: None
+## Column: curbweight      | Outliers: None
+## Column: enginesize      | Outliers: 16   | Percentage: 8.56  % | Bounds: [28.00, 212.00]
+## Column: boreratio       | Outliers: None
+## Column: stroke          | Outliers: 21   | Percentage: 11.23 % | Bounds: [2.67, 3.85]
+## Column: compressionratio | Outliers: 36   | Percentage: 19.25 % | Bounds: [7.52, 10.53]
+## Column: horsepower      | Outliers: 15   | Percentage: 8.02  % | Bounds: [1.00, 185.00]
+## Column: peakrpm         | Outliers: 2    | Percentage: 1.07  % | Bounds: [3750.00, 6550.00]
+## Column: citympg         | Outliers: 1    | Percentage: 0.53  % | Bounds: [2.50, 46.50]
+## Column: highwaympg      | Outliers: 2    | Percentage: 1.07  % | Bounds: [11.50, 47.50]
+## Column: price           | Outliers: 13   | Percentage: 6.95  % | Bounds: [-6125.00, 30019.00]
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# {-}{-}{-} Why Use Capping for Predicting Car Prices? {-}{-}{-}}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{{-}{-}{-}{-} Why Use Capping for Predicting Car Prices? {-}{-}{-}{-}}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## ---- Why Use Capping for Predicting Car Prices? ----
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}
+  \StringTok{"1. Outliers in car prices may represent rare but valid cases (e.g., luxury cars).}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,}
+  \StringTok{"2. Removing outliers could result in the loss of important information critical for predicting prices.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,}
+  \StringTok{"3. Capping limits the influence of extreme values without discarding data, ensuring the model learns from all cases.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 1. Outliers in car prices may represent rare but valid cases (e.g., luxury cars).
+##  2. Removing outliers could result in the loss of important information critical for predicting prices.
+##  3. Capping limits the influence of extreme values without discarding data, ensuring the model learns from all cases.
+\end{verbatim}
+
+\end{document}
