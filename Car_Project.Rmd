@@ -1,6 +1,6 @@
 ---
 title: "RitProject_Project"
-author: "Mohammad Bin Haider"
+  author: "Suhil/Mohammed/Shaika/Mahra"
 date: "`r Sys.Date()`"
 output:
   html_document: default
@@ -882,6 +882,116 @@ cat(
   "2. The file name reflects the dataset's purpose, making it easier to identify and reuse.\n",
   "3. This ensures consistency and reproducibility, providing a high-quality dataset ready for modeling or analysis.\n"
 )
+
+# === Modeling and Evaluation ===
+
+## ---- Step 10: Prepare Data for Modeling ----
+cat("\n==== Step 10: Prepare Data for Modeling ====\n")
+
+# Ensure 'price' is numeric
+data$price <- as.numeric(data$price)
+
+# Remove unnecessary columns
+excluded_columns <- c("car_ID", "CarName", "CarBrand")  # IDs and textual data not needed for modeling
+data_model <- data %>% select(-all_of(excluded_columns))
+
+# Convert categorical variables to factors
+categorical_vars <- names(data_model)[sapply(data_model, is.character)]
+data_model[categorical_vars] <- lapply(data_model[categorical_vars], as.factor)
+
+# Encode categorical variables using dummy variables
+cat("\nCreating dummy variables for categorical features...\n")
+dummies <- dummyVars(" ~ .", data = data_model)
+data_model <- data.frame(predict(dummies, newdata = data_model))
+
+cat("Dummy variables created.\n")
+
+## ---- Step 11: Split the Data ----
+cat("\n==== Step 11: Splitting the Data into Training and Testing Sets ====\n")
+
+set.seed(123)  # For reproducibility
+trainIndex <- createDataPartition(data_model$price, p = 0.8, list = FALSE)
+train_data <- data_model[trainIndex, ]
+test_data <- data_model[-trainIndex, ]
+
+cat(sprintf("Training data size: %d rows\n", nrow(train_data)))
+cat(sprintf("Testing data size: %d rows\n", nrow(test_data)))
+
+## ---- Step 12: Build the Linear Regression Model ----
+cat("\n==== Step 12: Building the Linear Regression Model ====\n")
+
+# Build the model
+linear_model <- lm(price ~ ., data = train_data)
+
+# Model summary
+cat("\nModel Summary:\n")
+print(summary(linear_model))
+
+## ---- Step 13: Evaluate the Model ----
+cat("\n==== Step 13: Evaluating the Model on Test Data ====\n")
+
+# Make predictions
+predictions <- predict(linear_model, newdata = test_data)
+
+# Calculate evaluation metrics
+rmse <- sqrt(mean((predictions - test_data$price)^2))
+r_squared <- 1 - sum((predictions - test_data$price)^2) / sum((mean(test_data$price) - test_data$price)^2)
+
+cat(sprintf("RMSE on Test Data: %.2f\n", rmse))
+cat(sprintf("R-squared on Test Data: %.2f\n", r_squared))
+
+## ---- Step 14: Visualize Actual vs Predicted Values ----
+cat("\n==== Step 14: Visualizing Actual vs Predicted Values ====\n")
+
+ggplot(data.frame(Actual = test_data$price, Predicted = predictions), aes(x = Actual, y = Predicted)) +
+  geom_point(alpha = 0.5, color = "blue") +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Actual vs Predicted Car Prices", x = "Actual Price", y = "Predicted Price") +
+  theme_minimal()
+
+## ---- Step 15: Residual Analysis ----
+cat("\n==== Step 15: Residual Analysis ====\n")
+
+# Calculate residuals
+residuals <- test_data$price - predictions
+
+# Residual Plot
+ggplot(data.frame(Predicted = predictions, Residuals = residuals), aes(x = Predicted, y = Residuals)) +
+  geom_point(alpha = 0.5, color = "purple") +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Residuals vs Predicted Prices", x = "Predicted Price", y = "Residuals") +
+  theme_minimal()
+
+# Distribution of Residuals
+ggplot(data.frame(Residuals = residuals), aes(x = Residuals)) +
+  geom_histogram(bins = 30, fill = "orange", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Residuals", x = "Residuals", y = "Frequency") +
+  theme_minimal()
+
+## ---- Step 16: Feature Importance ----
+cat("\n==== Step 16: Feature Importance ====\n")
+
+# Extracting and visualizing feature importance
+importance <- summary(linear_model)$coefficients[, "Estimate"]
+importance_df <- data.frame(Feature = names(importance), Importance = abs(importance)) %>%
+  arrange(desc(Importance))
+
+ggplot(importance_df, aes(x = reorder(Feature, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Feature Importance", x = "Features", y = "Coefficient Magnitude") +
+  theme_minimal()
+
+## ---- Step 17: Interpretation of Results ----
+cat("\n==== Step 17: Interpretation of Results ====\n")
+
+cat("The linear regression model has been built and evaluated.\n")
+cat(sprintf("RMSE on Test Data: %.2f\n", rmse))
+cat(sprintf("R-squared on Test Data: %.2f\n", r_squared))
+cat("The model explains a significant portion of the variance in car prices.\n")
+cat("Feature importance analysis identifies the most influential variables on car prices.\n")
+
+```
 
 ```
 
