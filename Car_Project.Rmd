@@ -1,6 +1,6 @@
 ---
-title: "RitProject_Project"
-  author: "Suhil/Mohammed/Shaika/Mahra"
+title: "Data-Driven Car Price Prediction: A Comprehensive Approach Using Regression Modeling and Feature Engineering"
+author: "Suhil Almuhaisni - Mohammed Bin Haider - Shaika Alsuwaidi - Mahra Alattar"
 date: "`r Sys.Date()`"
 output:
   html_document: default
