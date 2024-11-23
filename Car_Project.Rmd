@@ -8,50 +8,75 @@ output:
 ---
 
 ```{r}
-# --- Load Necessary Libraries ---
-cat("\n---- Loading Necessary Libraries ----\n")
+# === Data Understanding ===
 
-# Install and load libraries individually
-if (!require(tidyr)) install.packages("tidyr")
-library(tidyr)
+## ==== Step 0: Load Necessary Libraries ====
+cat("\n==== Step 0: Load Necessary Libraries ====\n")
 
-if (!require(ggplot2)) install.packages("ggplot2")
-library(ggplot2)
+# List of all required libraries
+required_libraries <- c(
+  "tidyr",         # Data tidying
+  "ggplot2",       # Visualization
+  "dplyr",         # Data manipulation
+  "caret",         # Machine learning and feature selection
+  "randomForest",  # Random Forest implementation
+  "scales",        # Scaling and formatting in plots
+  "reshape2",      # Data reshaping
+  "glue",          # String interpolation
+  "moments",       # Skewness and kurtosis calculations
+  "data.table",    # Efficient data handling
+  "RColorBrewer",  # Color palettes
+  "patchwork"      # Combining ggplot objects
+)
 
-if (!require(dplyr)) install.packages("dplyr")
-library(dplyr)
+# Function to check, install, and load libraries
+load_library <- function(package) {
+  if (!requireNamespace(package, quietly = TRUE)) {  # Check if the package is installed
+    cat(sprintf("Installing missing library: %s\n", package))
+    install.packages(package, dependencies = TRUE)  # Install the package if missing
+  }
+  library(package, character.only = TRUE)  # Load the package
+}
 
-if (!require(DataExplorer)) install.packages("DataExplorer")
-library(DataExplorer)
+# Apply the function to all required libraries
+invisible(lapply(required_libraries, load_library))
 
-cat("\nAll required libraries are ready to use.\n")
+cat("All required libraries are loaded.\n")
 
-# Load the dataset
-data <- read.csv("car_price.csv")
+# --- Step 1: Load Dataset ---
+cat("\n==== Step 1: Load Dataset ====\n")
 
-# --- Data Profiling ---
+data <- tryCatch(
+  {
+    read.csv("car_price.csv")
+  },
+  error = function(e) {
+    stop("Error loading dataset: ", e$message)
+  }
+)
+
+cat("Dataset loaded successfully.\n")
+
+# --- Step 2: Overview of Loaded Dataset ---
+cat("\n==== Step 2: Overview of Loaded Dataset ====\n")
 
 # Dataset dimensions
-cat("---- Dataset Overview ----\n")
-cat("Dataset dimensions: ", dim(data), "\n")  # Rows and columns
-cat("Column names: ", names(data), "\n")  # List of column names
+cat("\n---- Dataset Overview ----\n")
+cat("Dataset Dimensions (Rows x Columns): ", dim(data), "\n")
+cat("Column Names:\n", paste(names(data), collapse = ", "), "\n")
+
+# Calculate and print dataset size in memory
+data_size <- object.size(data)
+cat("Approximate Data Size in Memory: ", format(data_size, units = "auto"), "\n")
 
 # Data types and structure
 cat("\n---- Data Types and Structure ----\n")
-print(str(data))  # Structure of the dataset
+print(str(data))
 
-# Summary statistics for numeric and categorical columns
-cat("\n---- Summary Statistics ----\n")
-print(summary(data))
+# --- Step 3: Convert Data Types ---
+cat("\n==== Step 3: Convert IDs and Categorical Columns to Appropriate Types ====\n")
 
-
-```
-
-```{r echo=TRUE}
-# --- Convert Data Types ---
-cat("\n---- Convert IDs and Categorical Columns to Appropriate Types ----\n")
 data$car_ID <- as.factor(data$car_ID)  # Assuming car_ID is an identifier
-data$symboling <- as.factor(data$symboling)  # Assuming symboling is a categorical variable
 data$fueltype <- as.factor(data$fueltype)
 data$aspiration <- as.factor(data$aspiration)
 data$doornumber <- as.factor(data$doornumber)
@@ -62,220 +87,598 @@ data$enginetype <- as.factor(data$enginetype)
 data$cylindernumber <- as.factor(data$cylindernumber)
 data$fuelsystem <- as.factor(data$fuelsystem)
 
+cat("Data types converted successfully.\n")
 
+# --- Step 4: Profile the Dataset ---
+cat("\n==== Step 4: Profile the Dataset ====\n")
+
+# Summary statistics
+cat("\n---- Summary Statistics ----\n")
+numeric_cols <- setdiff(names(data)[sapply(data, is.numeric)], "car_ID")  # Exclude car_ID
+categorical_cols <- setdiff(names(data)[sapply(data, is.factor)], "car_ID")  # Exclude car_ID
+
+cat("\n--- Summary Statistics for Numeric Columns ---\n")
+print(summary(data[numeric_cols]))
+
+cat("\n--- Summary Statistics for Categorical Columns ---\n")
+print(summary(data[categorical_cols]))
+
+# --- Step 5: Visualize Numeric Variables ---
+cat("\n==== Step 5: Visualize Numeric Variables ====\n")
+
+plot_numeric_variable <- function(data, variable) {
+  cat(glue::glue("\nDisplaying histogram for numeric variable: {variable}\n"))
+  
+  # Histogram
+  print(
+    ggplot(data, aes_string(x = variable)) +
+      geom_histogram(fill = "lightblue", color = "black", bins = 30) +
+      labs(title = paste("Histogram for", variable), x = variable, y = "Frequency") +
+      theme_minimal()
+  )
+}
+
+if (length(numeric_cols) > 0) {
+  lapply(numeric_cols, function(col) plot_numeric_variable(data, col))
+}
+
+# --- Step 6: Visualize Categorical Variables ---
+cat("\n==== Step 6: Visualize Categorical Variables ====\n")
+
+plot_categorical_variable <- function(data, variable) {
+  cat(glue::glue("\nDisplaying barplot for categorical variable: {variable}\n"))
+  
+  print(
+    ggplot(data, aes_string(x = variable)) +
+      geom_bar(fill = "skyblue", color = "darkblue") +
+      labs(title = paste("Barplot for", variable), x = variable, y = "Count") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  )
+}
+
+if (length(categorical_cols) > 0) {
+  lapply(categorical_cols, function(col) plot_categorical_variable(data, col))
+}
+
+# ---  Reflection on Dataset Profiling ---
+cat("\n====  Reflection on Dataset Profiling ====\n")
+
+cat(glue("
+  1. **Dataset Size and Variables**:
+     - Rows: {dim(data)[1]}, Columns: {dim(data)[2]}.
+     - Approximate memory size: {format(data_size, units = 'auto')}.
+
+  2. **Variable Visualizations**:
+     - Histograms displayed for numeric variables (excluding car_ID).
+     - Bar plots displayed for categorical variables (excluding car_ID).
+
+  Profiling helps identify preprocessing needs, such as outlier handling, scaling, and encoding categorical features.
+"))
 
 ```
 
-```{r echo=TRUE}
-# --- Check for Missing Values ---
-cat("\n---- Missing Values Check ----\n")
+```{r}
+# === Data Preparation ===
 
+# --- Step 1: Missing Values ---
+
+# --- Sub-step 1.1: Identify Missing Values ---
+cat("\n---- Sub-step 1.1: Identifying Missing Values ----\n")
+
+# Calculate the number of missing values in each column
 missing_values <- colSums(is.na(data))
 cat("Missing values in each column:\n")
 print(missing_values)
 
-# --- Handling Missing Values ---
-cat("\n---- Handling Missing Values ----\n")
+# Visualize Missing Values Before Handling
+cat("\nVisualizing missing values (before handling)...\n")
+missing_df <- data.frame(Column = names(missing_values), MissingCount = missing_values)
+missing_df <- missing_df[missing_df$MissingCount > 0, ]  # Filter columns with missing values
+if (nrow(missing_df) > 0) {
+  # Bar plot for missing values before handling
+  missing_plot_before <- ggplot(missing_df, aes(x = reorder(Column, -MissingCount), y = MissingCount)) +
+    geom_bar(stat = "identity", fill = "skyblue", color = "darkblue") +
+    labs(
+      title = "Missing Values Per Column (Before Handling)",
+      x = "Column",
+      y = "Number of Missing Values"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  print(missing_plot_before)
+} else {
+  cat("No missing values found in the dataset.\n")
+}
 
-# Numeric columns: Median imputation
+# --- Sub-step 1.2: Handle Missing Values in car_ID ---
+cat("\n---- Sub-step 1.2: Handling Missing Values in car_ID ----\n")
+
+# car_ID is a unique identifier, so rows with missing car_ID values should be removed.
+if (anyNA(data$car_ID)) {
+  cat("Handling missing values in car_ID: Removing rows with missing car_ID values.\n")
+  data <- data[!is.na(data$car_ID), ]  # Remove rows where car_ID is NA
+  cat("Rows with missing car_ID values removed.\n")
+} else {
+  cat("No missing values found in car_ID.\n")
+}
+
+# --- Sub-step 1.3: Handle Numeric Missing Values (Median Imputation) ---
+cat("\n---- Sub-step 1.3: Handling Numeric Missing Values ----\n")
+
+# Identify numeric columns
 numeric_cols <- names(data)[sapply(data, is.numeric)]
+
+# Loop through each numeric column and fill missing values with the median
 for (col in numeric_cols) {
   if (sum(is.na(data[[col]])) > 0) {
-    data[[col]][is.na(data[[col]])] <- median(data[[col]], na.rm = TRUE)
-    cat(sprintf("Missing values in numeric column '%s' filled with median.\n", col))
+    median_val <- median(data[[col]], na.rm = TRUE)  # Calculate the median excluding NAs
+    data[[col]][is.na(data[[col]])] <- median_val  # Replace missing values with the median
+    cat(sprintf("Filled missing values in numeric column '%s' with median: %.2f\n", col, median_val))
   }
 }
 
-# Categorical columns: Mode imputation
-categorical_cols <- names(data)[sapply(data, is.character)]
+# --- Sub-step 1.4: Handle Categorical Missing Values (Mode Imputation) ---
+cat("\n---- Sub-step 1.4: Handling Categorical Missing Values ----\n")
+
+# Identify categorical columns (character or factor)
+categorical_cols <- names(data)[sapply(data, function(x) is.character(x) || is.factor(x))]
+
+# Loop through each categorical column and fill missing values with the mode
 for (col in categorical_cols) {
   if (sum(is.na(data[[col]])) > 0) {
-    mode_value <- names(which.max(table(data[[col]], useNA = "no")))
-    data[[col]][is.na(data[[col]])] <- mode_value
-    cat(sprintf("Missing values in categorical column '%s' filled with mode '%s'.\n", col, mode_value))
+    mode_val <- names(which.max(table(data[[col]], useNA = "no")))  # Find the mode
+    data[[col]][is.na(data[[col]])] <- mode_val  # Replace missing values with the mode
+    cat(sprintf("Filled missing values in categorical column '%s' with mode: '%s'\n", col, mode_val))
   }
 }
 
-# Final Check: Verify all missing values have been handled
-cat("\n---- Final Missing Values Check ----\n")
+# --- Sub-step 1.5: Verify and Visualize Post-Imputation ---
+cat("\n---- Sub-step 1.5: Verifying Post-Imputation ----\n")
+
+# Recalculate the number of missing values in each column
 final_missing_values <- colSums(is.na(data))
 cat("Remaining missing values in each column (should be 0):\n")
 print(final_missing_values)
 
-```
+# Visualize Missing Values After Handling
+cat("\nVisualizing missing values (after handling)...\n")
+final_missing_df <- data.frame(Column = names(final_missing_values), MissingCount = final_missing_values)
+final_missing_df <- final_missing_df[final_missing_df$MissingCount > 0, ]
+if (nrow(final_missing_df) > 0) {
+  # Bar plot for missing values after handling
+  missing_plot_after <- ggplot(final_missing_df, aes(x = reorder(Column, -MissingCount), y = MissingCount)) +
+    geom_bar(stat = "identity", fill = "lightgreen", color = "darkgreen") +
+    labs(
+      title = "Missing Values Per Column (After Handling)",
+      x = "Column",
+      y = "Number of Missing Values"
+    ) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  print(missing_plot_after)
+} else {
+  cat("All missing values have been successfully handled.\n")
+}
 
+# --- Reflection on Step 1: Missing Values ---
+cat("\n==== Reflection on Step 1: Missing Values ====\n")
+cat(
+  "1. **Identification**:\n",
+  "- Missing values were identified and visualized, allowing us to assess the extent of the issue.\n\n",
+  
+  "2. **Imputation Strategies**:\n",
+  "- `car_ID`: Rows with missing values were removed as it is a unique identifier.\n",
+  "- Numeric columns: Median imputation was used to ensure robustness to outliers.\n",
+  "- Categorical columns: Mode imputation preserved the most common category.\n\n",
+  
+  "3. **Post-Imputation Analysis**:\n",
+  "- All columns were rechecked to ensure no residual missing values.\n",
+  "- Visualizations confirmed the success of the missing value handling process.\n\n",
+  
+  "By addressing missing values systematically, the dataset is now complete and ready for further preprocessing or modeling.\n"
+)
 
-```{r echo=TRUE}
+# --- Step 2: Handle Duplicates ---
+cat("\n==== Step 2: Handle Duplicates ====\n")
 
-# --- Check for Duplicates ---
-cat("\n---- Checking for Duplicates ----\n")
-
-# Calculate the number of duplicate rows
+# Check for and remove duplicate rows
 num_duplicates <- nrow(data) - nrow(dplyr::distinct(data))
 cat(sprintf("Number of duplicate rows: %d\n", num_duplicates))
 
-# --- Handle Duplicates ---
-cat("\n---- Handling for Duplicates ----\n")
+# Remove duplicates
+data <- dplyr::distinct(data)
+cat(sprintf("Number of rows after removing duplicates: %d\n", nrow(data)))
 
-if (num_duplicates > 0) {
-  cat("\nDuplicates found. Removing duplicate rows...\n")
-  data <- dplyr::distinct(data)
-  cat(sprintf("Duplicates removed. Remaining rows: %d\n", nrow(data)))
-} else {
-  cat("\nNo duplicates found. Dataset remains unchanged.\n")
+# --- Reflection on Step 2: Handling Duplicates ---
+cat("\n==== Reflection on Step 2: Handling Duplicates ====\n")
+cat(
+  "1. **Initial Check**:\n",
+  "- Identified and reported the number of duplicate rows: ", num_duplicates, ".\n\n",
+  
+  "2. **Handling**:\n",
+  "- Removed all duplicate rows using `dplyr::distinct()`.\n",
+  "- Remaining rows after duplicate removal: ", nrow(data), ".\n\n",
+  
+  "By addressing duplicates, the dataset is now free of redundant rows, ensuring consistency and accuracy for subsequent preprocessing.\n"
+)
+
+# --- Step 3: Handle Outliers ---
+cat("\n==== Step 3: Handle Outliers ====\n")
+
+# --- Sub-step 3.1: Identify Outliers ---
+cat("\n---- Sub-step 3.1: Identifying Outliers in Numerical Columns ----\n")
+
+# Function to calculate IQR bounds
+identify_outliers <- function(column) {
+  Q1 <- quantile(column, 0.25, na.rm = TRUE)
+  Q3 <- quantile(column, 0.75, na.rm = TRUE)
+  IQR <- Q3 - Q1
+  list(lower = Q1 - 1.5 * IQR, upper = Q3 + 1.5 * IQR)
 }
 
-# --- Final Check ---
-cat("\n---- Final Duplicate Check ----\n")
-final_num_duplicates <- nrow(data) - nrow(dplyr::distinct(data))
-if (final_num_duplicates == 0) {
-  cat("Success: No duplicate rows exist.\n")
-} else {
-  cat(sprintf("Warning: %d duplicate rows remain after handling.\n", final_num_duplicates))
-}
-```
-
-```{r echo=TRUE}
-# --- Check Outliers in Numerical Columns ---
-cat("\n---- Identifying Columns with Outliers ----\n")
-
-# Loop through numeric columns and create colorful boxplots
+# Identify numeric columns
 numeric_cols <- names(data)[sapply(data, is.numeric)]
 
-# Store a copy of the original data for comparison
+# Store original data for comparison
 data_original <- data
 
-# Visualize the original data (before handling outliers)
+# --- Sub-step 3.2: Handle Outliers Using Capping ---
+cat("\n---- Sub-step 3.2: Handling Outliers Using Capping ----\n")
+
+# Loop through numeric columns to cap outliers
 for (col in numeric_cols) {
-  plot <- ggplot(data_original, aes(x = "Original Data", y = .data[[col]])) +
-    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "lightblue", color = "darkblue") +
-    labs(
-      title = paste("Boxplot of", col, "- Original Data"),
-      x = "", y = col
-    ) +
-    theme_minimal() +
-    theme(
-      plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-      axis.title.y = element_text(size = 12, face = "bold"),
-      axis.text.y = element_text(size = 10)
-    ) +
-    scale_y_continuous(labels = scales::comma)  # Add commas for large numbers
-  
-  print(plot)
-}
-
-# --- Handling Outliers Using Capping ---
-cat("\n---- Handling Outliers Using Capping ----\n")
-
-# Function to identify outliers using the IQR method
-identify_outliers <- function(column) {
-  Q1 <- quantile(column, 0.25, na.rm = TRUE)  # First quartile (25th percentile)
-  Q3 <- quantile(column, 0.75, na.rm = TRUE)  # Third quartile (75th percentile)
-  IQR <- Q3 - Q1                             # Interquartile range
-  lower_bound <- Q1 - 1.5 * IQR              # Lower bound
-  upper_bound <- Q3 + 1.5 * IQR              # Upper bound
-  return(list(lower_bound = lower_bound, upper_bound = upper_bound))
-}
-
-# Handle outliers for each numeric column
-for (col in numeric_cols) {
-  # Identify bounds
   bounds <- identify_outliers(data[[col]])
-  lower_bound <- bounds$lower_bound
-  upper_bound <- bounds$upper_bound
-  
-  # Count affected rows
-  outlier_indices <- which(data[[col]] < lower_bound | data[[col]] > upper_bound)
-  num_outliers <- length(outlier_indices)
-  total_values <- sum(!is.na(data[[col]]))  # Total non-NA values
-  outlier_percentage <- (num_outliers / total_values) * 100  # Calculate percentage
-  
-  if (num_outliers > 0) {
-    # Cap outliers to the lower and upper bounds
-    data[[col]][data[[col]] < lower_bound] <- lower_bound
-    data[[col]][data[[col]] > upper_bound] <- upper_bound
-    
-    # Log the results with improved formatting
-    cat(sprintf("Column: %-15s | Outliers: %-4d | Percentage: %-6.2f%% | Bounds: [%.2f, %.2f]\n",
-                col, num_outliers, outlier_percentage, lower_bound, upper_bound))
+  outliers <- which(data[[col]] < bounds$lower | data[[col]] > bounds$upper)
+  if (length(outliers) > 0) {
+    data[[col]][outliers] <- pmin(pmax(data[[col]][outliers], bounds$lower), bounds$upper)
+    cat(sprintf("Column: %-15s | Outliers Adjusted: %-4d | Bounds: [%.2f, %.2f]\n", 
+                col, length(outliers), bounds$lower, bounds$upper))
   } else {
     cat(sprintf("Column: %-15s | Outliers: None\n", col))
   }
 }
 
-
-# --- Compare Before and After Outlier Handling ---
-cat("\n---- Comparing Before and After Outlier Handling ----\n")
+# --- Sub-step 3.3: Compare Before and After Handling ---
+cat("\n---- Sub-step 3.3: Comparing Before and After Outlier Handling ----\n")
 
 for (col in numeric_cols) {
   plot <- ggplot() +
     geom_boxplot(data = data_original, aes(x = "Original Data", y = .data[[col]]), 
-                 outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "lightblue", color = "darkblue") +
+                 outlier.colour = "red", fill = "lightblue", color = "darkblue") +
     geom_boxplot(data = data, aes(x = "After Capping", y = .data[[col]]), 
-                 outlier.colour = "red", outlier.shape = 16, outlier.size = 3, fill = "lightgreen", color = "darkblue") +
-    labs(
-      title = paste("Comparison of", col, "- Before and After Handling Outliers"),
-      x = "", y = col
-    ) +
+                 outlier.colour = "red", fill = "lightgreen", color = "darkblue") +
+    labs(title = paste("Comparison of", col, "- Before and After Outlier Handling"), x = "", y = col) +
     theme_minimal() +
-    theme(
-      plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-      axis.title.y = element_text(size = 12, face = "bold"),
-      axis.text.y = element_text(size = 10)
-    ) +
-    scale_y_continuous(labels = scales::comma)  # Add commas for large numbers
-  
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 14)) +
+    scale_y_continuous(labels = scales::comma)
   print(plot)
 }
+
 # --- Why Use Capping for Predicting Car Prices? ---
 cat("\n---- Why Use Capping for Predicting Car Prices? ----\n")
 cat(
-  "1. Outliers in car prices may represent rare but valid cases (e.g., luxury cars).\n",
-  "2. Removing outliers could result in the loss of important information critical for predicting prices.\n",
-  "3. Capping limits the influence of extreme values without discarding data, ensuring the model learns from all cases.\n"
+  "Capping reduces the impact of outliers while retaining rare but valid cases (e.g., luxury cars),\n",
+  "ensuring the model learns from all data without losing critical information.\n"
 )
 
-```
-```{r echo=TRUE}
-# --- Boxplots for Categorical Variables vs Price (Excluding Null/Empty Values) ---
-cat("\n---- Boxplots for Categorical Variables Against Price (Excluding Null/Empty Values) ----\n")
+# --- Reflection on Step 3: Handling Outliers ---
+cat("\n==== Reflection on Step 3: Handling Outliers ====\n")
+cat(
+  "1. Outliers were detected using the IQR method and visualized with boxplots.\n",
+  "2. Capping limited extreme values' influence while preserving data integrity.\n",
+  "3. Boxplots showed the effectiveness of capping in reducing outlier impact.\n",
+  "This ensures the dataset is robust and ready for analysis.\n"
+)
+# --- Step 4: Scaling / Normalizing Features ---
+# 
+# Scaling involves normalizing numeric features to a consistent range, often between 0 and 1.
+# This step is critical for machine learning algorithms sensitive to feature magnitude, such as:
+#   - Gradient Descent-Based Models (e.g., Linear or Logistic Regression)
+#   - K-Nearest Neighbors (KNN)
+#   - Support Vector Machines (SVM)
+#   - Neural Networks
+# 
+# Min-Max Scaling transforms each feature using the formula:
+#   Scaled Value = (Value - Min) / (Max - Min)
+# This ensures that all features contribute equally during model training.
+# 
+# 
+# # Identify numeric columns
+# numeric_cols <- names(data)[sapply(data, is.numeric)]
+# 
+# # Apply Min-Max Scaling to Numeric Columns
+# cat("\n---- Scaling Numeric Columns ----\n")
+# scaled_data <- data  # Create a copy of the dataset for scaling
+# scaled_data[numeric_cols] <- lapply(data[numeric_cols], function(col) {
+#   scaled_col <- (col - min(col, na.rm = TRUE)) / (max(col, na.rm = TRUE) - min(col, na.rm = TRUE))
+#   return(scaled_col)
+# })
+# cat("Features scaled using Min-Max scaling.\n")
+# 
+# # Optional: Visualize Original vs. Scaled Data
+# cat("\n---- Visualizing Original vs. Scaled Data (Optional) ----\n")
+# for (col in numeric_cols) {
+#   plot <- ggplot() +
+#     # Original data distribution
+#     geom_density(data = data, aes_string(x = col), fill = "lightblue", alpha = 0.5, color = "darkblue") +
+#     # Scaled data distribution
+#     geom_density(data = scaled_data, aes_string(x = col), fill = "lightgreen", alpha = 0.5, color = "darkgreen") +
+#     labs(
+#       title = paste("Comparison of", col, "- Original vs. Scaled"),
+#       x = col,
+#       y = "Density"
+#     ) +
+#     theme_minimal() +
+#     theme(
+#       plot.title = element_text(hjust = 0.5, face = "bold", size = 14)
+#     )
+#   print(plot)
+# }
+
+# --- Reflection on Step 4: Scaling / Normalizing Features ---
+cat("\n==== Reflection on Step 4: Scaling / Normalizing Features ====\n")
+cat(
+  "1. Scaling was skipped because the selected machine learning algorithms (e.g., Random Forest, Gradient Boosting)\n",
+  "   are tree-based models that do not rely on feature scaling.\n",
+  "2. These models split data based on thresholds, making scaling unnecessary.\n",
+  "3. Skipping scaling ensures computational efficiency without compromising model performance.\n",
+  "4. If future models require distance-based methods (e.g., KNN or SVM), scaling can be revisited.\n"
+)
+
+# --- Step 5: Data Transformation ---
+cat("\n==== Step 5: Data Transformation ====\n")
+
+# Identify numeric columns
+numeric_cols <- names(data)[sapply(data, is.numeric)]
+
+# Function to calculate skewness
+library(moments)  # Ensure the 'moments' package is installed
+calculate_skewness <- function(column) {
+  skewness(column, na.rm = TRUE)
+}
+
+# Apply Log Transformation to Highly Skewed Numeric Columns
+cat("\n---- Applying Log Transformation to Highly Skewed Columns ----\n")
+for (col in numeric_cols) {
+  skew_val <- calculate_skewness(data[[col]])  # Calculate skewness
+  cat(sprintf("Skewness of '%s': %.2f\n", col, skew_val))
+  
+  if (skew_val > 1 && min(data[[col]], na.rm = TRUE) > 0) {  # Apply if skewness > 1 and values are positive
+    data[[paste0(col, "_log")]] <- log(data[[col]])
+    cat(sprintf("Applied log transformation to '%s' (Skewness: %.2f).\n", col, skew_val))
+  } else {
+    cat(sprintf("Skipped log transformation for '%s' (Skewness: %.2f).\n", col, skew_val))
+  }
+}
+
+# --- Visualize Original vs. Log Transformed Data ---
+cat("\n---- Visualizing Original vs. Log Transformed Data ----\n")
+for (col in numeric_cols) {
+  log_col <- paste0(col, "_log")
+  if (log_col %in% names(data)) {  # Ensure log-transformed column exists
+    plot <- ggplot() +
+      geom_density(data = data, aes_string(x = col), fill = "lightblue", alpha = 0.5, color = "darkblue") +
+      geom_density(data = data, aes_string(x = log_col), fill = "lightgreen", alpha = 0.5, color = "darkgreen") +
+      labs(
+        title = paste("Comparison of", col, "- Original vs. Log Transformed"),
+        x = col,
+        y = "Density"
+      ) +
+      theme_minimal() +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 14)
+      )
+    print(plot)
+  }
+}
+
+# --- Reflection on Step 5: Data Transformation ---
+cat("\n==== Reflection on Step 5: Data Transformation ====\n")
+cat(
+  "1. Log transformation was applied to numeric columns with high skewness (Skewness > 1) and positive values.\n",
+  "2. This reduces skewness, stabilizes variance, and improves linear relationships for better linear regression performance.\n",
+  "3. Columns with low skewness or non-positive values were skipped to avoid unnecessary transformations or errors.\n",
+  "4. Visualization confirmed the effectiveness of log transformation in normalizing distributions.\n"
+)
+# === Step 6: Feature Engineering ===
+cat("\n==== Step 6: Feature Engineering ====\n")
+
+# --- Sub-step 6.1: Review Existing Features ---
+cat("\n---- Reviewing Existing Features ----\n")
+
+# Display column names and summary statistics
+cat("Current column names:\n")
+print(names(data))
+cat("\nSummary statistics:\n")
+print(summary(data))
+
+# --- Sub-step 6.2: Feature Engineering ---
+cat("\n---- Engineering Features  ----\n")
+
+# 1. **Interaction Features: Horsepower-to-Weight Ratio**
+cat("\nCalculating Horsepower-to-Weight Ratio...\n")
+if ("horsepower" %in% names(data) && "curbweight" %in% names(data)) {
+  data$hp_to_weight <- data$horsepower / data$curbweight
+  cat("Horsepower-to-weight ratio created.\n")
+} else {
+  cat("Skipped horsepower-to-weight ratio due to missing 'horsepower' or 'curbweight'.\n")
+}
+
+# 2. **Vehicle Segment Classification (Luxury, Standard, Economy)**
+cat("\nClassifying Vehicle Segments...\n")
+if ("price" %in% names(data)) {
+  quantiles <- quantile(data$price, probs = c(0.33, 0.66, 1.0), na.rm = TRUE)
+  data$segment <- cut(
+    data$price,
+    breaks = c(-Inf, quantiles[1], quantiles[2], quantiles[3]),
+    labels = c("Economy", "Standard", "Luxury"),
+    include.lowest = TRUE
+  )
+  cat("Vehicle segments classified into Economy, Standard, and Luxury.\n")
+} else {
+  cat("Skipped vehicle segment classification due to missing 'price'.\n")
+}
+
+# 3. **Fuel Economy Score**
+cat("\nCalculating Fuel Economy Score...\n")
+if ("citympg" %in% names(data) && "highwaympg" %in% names(data)) {
+  data$fuel_economy <- (data$citympg + data$highwaympg) / 2
+  cat("Fuel economy score created.\n")
+} else {
+  cat("Skipped fuel economy score due to missing 'citympg' or 'highwaympg'.\n")
+}
+
+# 4. **Brand Value**
+cat("\nCreating Brand Value Feature...\n")
+if ("CarName" %in% names(data)) {
+  data <- data %>%
+    mutate(CarBrand = tolower(gsub(" .*", "", CarName)))  # Extract brand name from CarName
+  
+  # Standardize brand names
+  brand_corrections <- c("maxda" = "mazda", "vw" = "volkswagen", "vokswagen" = "volkswagen", 
+                         "porcshce" = "porsche", "toyouta" = "toyota")
+  data$CarBrand <- recode(data$CarBrand, !!!brand_corrections)
+  
+  # Calculate average price by brand
+  brand_avg_price <- data %>%
+    group_by(CarBrand) %>%
+    summarise(BrandAvgPrice = mean(price, na.rm = TRUE), .groups = "drop")
+  data <- data %>%
+    left_join(brand_avg_price, by = "CarBrand")
+  cat("Brand value feature created.\n")
+} else {
+  cat("Skipped brand value due to missing 'CarName'.\n")
+}
+
+
+# --- Sub-step 6.3: Visualizing Features ---
+cat("\n---- Visualizing New Features ----\n")
+
+library(ggplot2)
+
+# 1. Visualize Horsepower-to-Weight Ratio
+if ("hp_to_weight" %in% names(data)) {
+  ggplot(data, aes(x = hp_to_weight, y = price)) +
+    geom_point(color = "firebrick", alpha = 0.7) +  
+    labs(
+      title = "Horsepower-to-Weight Ratio vs Price",
+      x = "Horsepower-to-Weight Ratio",
+      y = "Price"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(color = "darkred", size = 14)) %>%
+    print()
+}
+
+# 2. Visualize Vehicle Segment Distribution
+if ("segment" %in% names(data)) {
+  ggplot(data, aes(x = segment, fill = segment)) +
+    geom_bar(color = "black", fill = c("#66c2a5", "#fc8d62", "#8da0cb")) +  
+    labs(
+      title = "Vehicle Segment Distribution",
+      x = "Segment",
+      y = "Count"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(color = "darkblue", size = 14),
+      legend.position = "none"
+    ) %>%
+    print()
+}
+
+# 3. Visualize Fuel Economy Score
+if ("fuel_economy" %in% names(data)) {
+  ggplot(data, aes(x = fuel_economy, y = price)) +
+    geom_point(color = "darkgreen", alpha = 0.7) +  
+    labs(
+      title = "Fuel Economy Score vs Price",
+      x = "Fuel Economy Score",
+      y = "Price"
+    ) +
+    theme_minimal() +
+    theme(plot.title = element_text(color = "forestgreen", size = 14)) %>%
+    print()
+}
+
+# 4. Visualize Brand Value (Average Price by Brand)
+if ("BrandAvgPrice" %in% names(data)) {
+  ggplot(data, aes(x = reorder(CarBrand, price, median), y = price, fill = CarBrand)) +
+    geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 2, alpha = 0.7) +  # Boxplot with outliers highlighted
+    labs(
+      title = "Price Distribution by Car Brand",
+      x = "Car Brand",
+      y = "Price"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(color = "darkblue", size = 14),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
+    scale_fill_manual(values = rainbow(length(unique(data$CarBrand))))  # Custom rainbow palette for brands
+} else {
+  cat("BrandAvgPrice or CarBrand is not available for visualization.\n")
+}
+
+# --- Reflection on Step 6: Feature Engineering ---
+cat("\n==== Reflection on Step 6: Feature Engineering ====\n")
+cat(
+  "1. Horsepower-to-Weight Ratio:\n",
+  "   - Captures the relationship between engine power and vehicle weight.\n",
+  "   - Indicates vehicle performance, relevant for pricing decisions.\n",
+  "2. Vehicle Segments:\n",
+  "   - Classified cars into Economy, Standard, and Luxury based on price quantiles.\n",
+  "   - Adds domain knowledge about market positioning of vehicles.\n",
+  "3. Fuel Economy Score:\n",
+  "   - Combines city and highway MPG into a single efficiency metric.\n",
+  "   - Provides insights into fuel consumption trends.\n",
+  "4. Brand Value:\n",
+  "   - Created 'BrandAvgPrice' to reflect consumer perception and reliability for each brand.\n",
+  "These features ensure linear relationships, interpretability, and improved model performance for linear regression.\n"
+)
+# === Step 7: Visualizing Features Against Price ===
+cat("\n==== Step 7: Visualizing Features Against Price ====\n")
 
 library(ggplot2)
 library(dplyr)
+library(scales)
+
+# --- Sub-step 7.1: Boxplots for Categorical Variables Against Price ---
+cat("\n---- Boxplots for Categorical Variables Against Price ----\n")
 
 # Identify categorical columns
 categorical_cols <- names(data)[sapply(data, is.character)]
 cat("Categorical Columns Identified:\n")
 print(categorical_cols)
 
-# Clean data by removing rows with NA or empty values in price or categorical variables
+# Clean data for categorical boxplots
 data_cleaned <- data %>%
   filter(!is.na(price)) %>%
   filter(!apply(., 1, function(row) any(is.na(row) | row == "")))
 
-# Ensure 'data_cleaned' is properly created
 if (nrow(data_cleaned) == 0) {
   stop("Error: The dataset 'data_cleaned' is empty after removing null or empty values.")
 }
 
-# Loop through categorical columns and create boxplots
+# Generate boxplots for categorical variables
 for (col in categorical_cols) {
   if (col == "CarName") {
-    # Handle 'CarName' by selecting top 10 categories by mode (most frequent)
-    cat(sprintf("\nColumn '%s' has many categories. Selecting top 10 by frequency.\n", col))
+    # Handle 'CarName': Visualize top 10 most frequent car names
+    cat(sprintf("\nColumn '%s' has many categories. Visualizing top 10 most frequent.\n", col))
     
     # Get the top 10 most frequent CarNames
     top_cars <- data_cleaned %>%
       count(CarName) %>%
       arrange(desc(n)) %>%
-      slice(1:10)  # Select top 10 by frequency
+      slice(1:10)
     
-    # Filter cleaned data to include only top 10 categories
+    # Filter data to include only top 10 CarNames
     filtered_data <- data_cleaned %>% filter(CarName %in% top_cars$CarName)
     
-    # Create boxplot for top 10 car names by mode
+    # Create the boxplot
     plot <- ggplot(filtered_data, aes(x = reorder(CarName, price, FUN = median), y = price, fill = CarName)) +
-      geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 2) +
+      geom_boxplot(outlier.colour = "gold", outlier.shape = 16, outlier.size = 3, alpha = 0.8) +
       labs(
         title = "Price Distribution by Top 10 Most Frequent Car Names",
         x = "Car Name",
@@ -283,22 +686,20 @@ for (col in categorical_cols) {
       ) +
       theme_minimal() +
       theme(
-        plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-        axis.title.x = element_text(size = 12, face = "bold"),
-        axis.title.y = element_text(size = 12, face = "bold"),
-        axis.text.x = element_text(angle = 45, hjust = 1)
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "purple"),
+        axis.text.x = element_text(angle = 45, hjust = 1, color = "darkblue"),
+        axis.text.y = element_text(color = "darkgreen")
       ) +
-      scale_y_continuous(labels = scales::comma)
+      scale_y_continuous(labels = scales::comma) +
+      scale_fill_manual(values = grDevices::rainbow(10))  # Dynamic palette for top 10 categories
     
-    # Display the plot
+    # Print the plot
     print(plot)
   } else {
-    # Standard boxplot for other categorical variables
-    filtered_data <- data_cleaned %>%
-      filter(!is.na(.data[[col]]) & .data[[col]] != "")
-    
-    plot <- ggplot(filtered_data, aes_string(x = col, y = "price", fill = col)) +
-      geom_boxplot(outlier.colour = "red", outlier.shape = 16, outlier.size = 2) +
+    # Standard boxplots for other categorical variables
+    num_colors <- length(unique(data_cleaned[[col]]))
+    plot <- ggplot(data_cleaned, aes_string(x = col, y = "price", fill = col)) +
+      geom_boxplot(outlier.colour = "gold", outlier.shape = 16, outlier.size = 3, alpha = 0.8) +
       labs(
         title = paste("Price Distribution by", col),
         x = col,
@@ -306,67 +707,44 @@ for (col in categorical_cols) {
       ) +
       theme_minimal() +
       theme(
-        plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-        axis.title.x = element_text(size = 12, face = "bold"),
-        axis.title.y = element_text(size = 12, face = "bold"),
-        axis.text.x = element_text(angle = 45, hjust = 1)
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "purple"),
+        axis.text.x = element_text(angle = 45, hjust = 1, color = "darkblue"),
+        axis.text.y = element_text(color = "darkgreen")
       ) +
-      scale_y_continuous(labels = scales::comma)
+      scale_y_continuous(labels = scales::comma) +
+      scale_fill_manual(values = grDevices::rainbow(num_colors))  # Dynamic palette for all categories
     
-    # Display the plot
+    # Print the plot
     print(plot)
   }
 }
 
-# --- Why Visualize Top 10 Most Frequent Car Names? ---
-cat("\n---- Why Visualize Top 10 Most Frequent Car Names? ----\n")
+cat("\n---- Why Boxplots for Categorical Variables? ----\n")
 cat(
-  "Visualizing the top 10 most frequent car names provides a clear and focused analysis of pricing trends for popular models. 
-  Since 'CarName' has a large number of unique categories, including all of them in a single visualization would lead to clutter 
-  and make it difficult to interpret the data. By limiting the analysis to the most frequent categories, we can ensure that the 
-  visualization remains meaningful and actionable. This approach highlights patterns and trends in pricing for cars that are 
-  most relevant to our analysis while avoiding the noise introduced by less frequent categories.\n\n"
+  "Boxplots help visualize price distributions across categories, highlighting medians, variability, and outliers. 
+  For 'CarName', only the top 10 most frequent categories are visualized for better interpretability.\n"
 )
 
-# --- How We Handled Missing Values ---
-cat("\n---- How We Handled Missing Values ----\n")
-cat(
-  "To ensure accurate and clean visualizations, we also handled missing (NA) and null values in the dataset. Rows with missing values 
-  in the 'price' column or any categorical variable were excluded from the analysis. This was achieved by applying the following steps:\n
-  1. Filtering out rows where 'price' was NA.\n
-  2. Removing rows where any categorical column had an NA or empty string value.\n
-  By performing this cleaning step, we ensured that the data used for visualization is complete and reliable, making the analysis 
-  robust and free from biases introduced by incomplete data."
-)
-
-
-```
-
-``` {r}
-# --- Scatterplots for Numerical Variables vs Price ---
+# --- Sub-step 7.2: Scatterplots for Numerical Variables Against Price ---
 cat("\n---- Scatterplots for Numerical Variables Against Price ----\n")
-
-library(ggplot2)
-
-# Clean data by removing rows with NA or empty values in price or numerical variables
-data_cleaned <- data %>%
-  filter(!is.na(price)) %>%
-  filter(!apply(., 1, function(row) any(is.na(row))))
 
 # Identify numerical columns
 numeric_cols <- names(data_cleaned)[sapply(data_cleaned, is.numeric)]
 cat("Numerical Columns Identified:\n")
 print(numeric_cols)
 
-# Loop through numerical columns and create scatterplots
+# Generate scatterplots for numerical variables
 for (col in numeric_cols) {
-  if (col != "price") {  # Exclude 'price' from comparison
+  if (col != "price") {
     cat(sprintf("\nCreating scatterplot for '%s' vs 'price'.\n", col))
     
-    # Create scatterplot with coloring based on 'CarName'
+    # Dynamically generate a large enough color palette for CarName
+    num_colors <- length(unique(data_cleaned$CarName))
+    color_palette <- grDevices::rainbow(num_colors)
+    
     plot <- ggplot(data_cleaned, aes_string(x = col, y = "price")) +
-      geom_point(aes(color = CarName), alpha = 0.5) +
-      geom_smooth(method = "lm", color = "red", se = FALSE) +
+      geom_point(aes(color = CarName), size = 2.5, alpha = 0.6) +  # Adjusted size and transparency for points
+      geom_smooth(method = "lm", color = "red", se = FALSE, linewidth = 1) +  # Trendline for correlation
       labs(
         title = paste("Relationship Between", col, "and Price"),
         x = col,
@@ -374,151 +752,137 @@ for (col in numeric_cols) {
       ) +
       theme_minimal() +
       theme(
-        plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
-        axis.title.x = element_text(size = 12, face = "bold"),
-        axis.title.y = element_text(size = 12, face = "bold"),
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        legend.position = "none"  # Optional: remove legend if CarName has too many values
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "darkred"),
+        axis.text.x = element_text(size = 10, color = "darkblue"),
+        axis.text.y = element_text(size = 10, color = "darkgreen"),
+        legend.position = "none"  # Remove legend for simplicity
       ) +
-      scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
-      scale_x_continuous(labels = scales::comma)    # Format x-axis with commas
+      scale_y_continuous(labels = scales::comma) +
+      scale_x_continuous(labels = scales::comma) +
+      scale_color_manual(values = color_palette)  # Apply dynamic color palette
     
-    # Display the plot
+    # Print the plot
     print(plot)
   }
 }
 
-# --- Why Visualize Numerical Variables Against Price? ---
-cat("\n---- Why Visualize Numerical Variables Against Price? ----\n")
+cat("\n---- Why Scatterplots for Numerical Variables? ----\n")
 cat(
-  "Scatterplots for numerical variables against 'price' help identify patterns, trends, and potential relationships in the data. 
-  By using points colored by 'CarName', we can observe differences between car models while highlighting correlations with linear trendlines. 
-  This analysis is crucial for understanding which numerical features have significant impacts on price."
+  "Scatterplots reveal relationships, trends, and correlations between numerical variables and price. 
+  Including a linear trendline helps identify significant predictors for car pricing.\n"
 )
-```
 
+# === Step 8: Redundant Features and Feature Selection ===
+cat("\n==== Step 8: Redundant Features and Feature Selection ====\n")
 
-```{r}
-# ---  Feature Engineering for Predicting Car Prices ---
-cat("\n----  Feature Engineering for Predicting Car Prices ----\n")
+library(caret)  # For findCorrelation function
+library(ggplot2)  # For heatmap visualization
+library(dplyr)  # For data manipulation
+library(reshape2)  # For reshaping correlation matrix
 
-library(dplyr)
+# --- Sub-step 8.1: Check and Remove Redundant Features ---
+cat("\n---- Checking and Removing Redundant Features ----\n")
 
-# 1. **Brand Value Feature**
-cat("\nCreating Brand Value Feature...\n")
-data <- data %>%
-  mutate(CarBrand = tolower(gsub(" .*", "", CarName)))  # Extract brand name from CarName
-
-# Standardize brand names
-brand_corrections <- c("maxda" = "mazda", "vw" = "volkswagen", "vokswagen" = "volkswagen", 
-                       "porcshce" = "porsche", "toyouta" = "toyota")
-data$CarBrand <- recode(data$CarBrand, !!!brand_corrections)
-
-# Create average price per brand as a feature
-brand_avg_price <- data %>%
-  group_by(CarBrand) %>%
-  summarise(BrandAvgPrice = mean(price, na.rm = TRUE), .groups = "drop")
-data <- data %>%
-  left_join(brand_avg_price, by = "CarBrand")
-
-cat("Brand value feature created.\n")
-
-# 2. **Engine Efficiency**
-cat("\nCalculating Engine Efficiency...\n")
-data <- data %>%
-  mutate(engine_efficiency = horsepower / enginesize)
-
-cat("Engine efficiency feature created.\n")
-
-# 3. **Luxury Indicator**
-cat("\nCreating a Luxury Indicator Feature...\n")
-luxury_threshold <- quantile(data$price, 0.85, na.rm = TRUE)
-data <- data %>%
-  mutate(is_luxury = as.factor(ifelse(price > luxury_threshold, "Yes", "No")))
-
-cat(sprintf("Luxury threshold for price: %.2f\n", luxury_threshold))
-cat("Luxury indicator feature created.\n")
-
-# 4. **Fuel Economy Score**
-cat("\nCalculating Fuel Economy Score...\n")
-data <- data %>%
-  mutate(fuel_economy_score = (citympg + highwaympg) / 2)
-
-cat("Fuel economy score feature created.\n")
-
-# 5. **Vehicle Age**
-cat("\nCalculating Age of Vehicle...\n")
-if ("year" %in% names(data)) {
-  data <- data %>%
-    mutate(year = as.numeric(year), 
-           car_age = 2024 - ifelse(!is.na(year), year, 2020))  # Replace 2024 with the current year
+# Identify and remove explicitly redundant columns
+redundant_cols <- c("Car_ID")  # Replace with known redundant column names
+if (all(redundant_cols %in% names(data))) {
+  data <- data %>% select(-all_of(redundant_cols))
+  cat("Removed redundant features:\n")
+  print(redundant_cols)
 } else {
-  cat("Column 'year' not found. Defaulting to a hypothetical age (2024 - 2020).\n")
-  data <- data %>%
-    mutate(car_age = 2024 - 2020)  # Defaulting car_age to a fixed value
+  cat("No specified redundant features found.\n")
 }
 
-cat("Vehicle age feature created.\n")
+# --- Sub-step 8.2: Feature Selection Based on Correlation Matrix ---
+cat("\n---- Feature Selection Based on Correlation Matrix ----\n")
 
-# --- Saving the Cleaned and Feature-Enhanced Dataset ---
-cat("\n---- Saving the Feature-Enhanced Dataset ----\n")
-write.csv(data, "car_price_feature_engineered.csv", row.names = FALSE)
-cat("Dataset saved as 'car_price_feature_engineered.csv'.\n")
-```
-
-
-
-
-
-
-```{r}
-
-# --- Heatmap of Correlation with Price ---
-cat("\n---- Heatmap of Correlation with Price ----\n")
-
-# Select numerical columns, including price
+# Identify numeric columns
 numeric_cols <- names(data)[sapply(data, is.numeric)]
+cat("Numeric Columns Identified:\n")
+print(numeric_cols)
 
-# Ensure 'price' is included in the numeric columns
-if (!"price" %in% numeric_cols) {
-  stop("Error: 'price' column must be numeric to calculate correlation.")
+# Ensure there are numeric columns
+if (length(numeric_cols) == 0) {
+  stop("Error: No numeric columns found in the dataset.")
 }
 
-# Compute correlation matrix
+# Generate the correlation matrix for numeric columns
 correlation_matrix <- cor(data[numeric_cols], use = "complete.obs")
 
-# Extract correlation of variables with 'price'
-price_correlation <- correlation_matrix["price", , drop = FALSE]  # Drop extra dimensions for clarity
+# Reshape the correlation matrix for visualization
+correlation_melted <- melt(correlation_matrix)
+colnames(correlation_melted) <- c("Feature1", "Feature2", "Correlation")
 
-# Convert to a data frame for heatmap plotting
-correlation_df <- as.data.frame(as.table(price_correlation))
-
-# Visualize correlation with a heatmap
-library(ggplot2)
-ggplot(correlation_df, aes(x = Var2, y = Var1, fill = Freq)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
-                       name = "Correlation") +
-  labs(
-    title = "Heatmap of Correlation with Price",
-    x = "Variable",
-    y = ""
+# Create a heatmap of the correlation matrix
+heatmap_plot <- ggplot(correlation_melted, aes(x = Feature1, y = Feature2, fill = Correlation)) +
+  geom_tile(color = "white") +  # Add gridlines to tiles
+  scale_fill_gradient2(
+    low = "blue", high = "red", mid = "white", midpoint = 0, 
+    limit = c(-1, 1), name = "Correlation"  # Define color scale limits and legend title
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
-    axis.text.y = element_text(size = 12),
-    axis.title.x = element_text(size = 14, face = "bold")
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "darkblue"),
+    axis.text.y = element_text(size = 10, color = "darkblue"),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5, color = "darkred")
+  ) +
+  labs(
+    title = "Correlation Matrix of Numeric Features",
+    x = "",
+    y = ""
   )
+
+# Print the heatmap
+print(heatmap_plot)
+
+# Find highly correlated features (correlation > 0.9)
+highly_correlated <- findCorrelation(correlation_matrix, cutoff = 0.9, names = TRUE)
+
+# Remove highly correlated features
+if (length(highly_correlated) > 0) {
+  cat("Highly correlated features identified and removed:\n")
+  print(highly_correlated)
+  data <- data %>% select(-all_of(highly_correlated))
+} else {
+  cat("No highly correlated features found.\n")
+}
+
+# --- Reflection on Step 8 ---
+cat("\n==== Reflection on Step 8 ====\n")
+cat(
+  "1. Redundant Features:\n",
+  "   - Explicitly removed columns like 'Car_ID' which do not contribute to predictive modeling.\n\n",
+  "2. Correlation Matrix:\n",
+  "   - Created a heatmap to visualize correlations among numeric features.\n",
+  "   - Identified features with high correlation (cutoff: >0.9) and removed them to reduce multicollinearity.\n\n",
+  "By performing this step, the dataset is now more refined and ready for modeling.\n"
+)
+
+# === Step 9: Export Final Dataset ===
+cat("\n==== Step 9: Export Final Dataset ====\n")
+
+# Define the file name for the final dataset
+output_file <- "car_prices_preprocessed.csv"  # Descriptive name based on the context
+
+# Export the dataset
+tryCatch(
+  {
+    write.csv(data, output_file, row.names = FALSE)
+    cat(sprintf("Final dataset successfully exported to '%s'.\n", output_file))
+  },
+  error = function(e) {
+    cat(sprintf("Error exporting the final dataset: %s\n", e$message))
+  }
+)
+
+# --- Reflection on Step 9 ---
+cat("\n==== Reflection on Step 9 ====\n")
+cat(
+  "1. The cleaned and preprocessed dataset has been saved as a CSV file named 'car_prices_preprocessed.csv'.\n",
+  "2. The file name reflects the dataset's purpose, making it easier to identify and reuse.\n",
+  "3. This ensures consistency and reproducibility, providing a high-quality dataset ready for modeling or analysis.\n"
+)
+
 ```
 
-```{r }
-# --- Save Cleaned Data ---
-cat("\n---- Saving Cleaned Data ----\n")
-
-write.csv(data, "car_price_cleaned.csv", row.names = FALSE)
-cat("Cleaned dataset saved as 'car_price_cleaned.csv'.\n")
-```
 
