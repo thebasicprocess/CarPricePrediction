@@ -156,9 +156,7 @@ cat(glue("
   Profiling helps identify preprocessing needs, such as outlier handling, scaling, and encoding categorical features.
 "))
 
-```
 
-```{r}
 # === Data Preparation ===
 
 # --- Step 1: Missing Values ---
@@ -440,12 +438,14 @@ calculate_skewness <- function(column) {
 
 # Apply Log Transformation to Highly Skewed Numeric Columns
 cat("\n---- Applying Log Transformation to Highly Skewed Columns ----\n")
+transformed_cols <- c()
 for (col in numeric_cols) {
   skew_val <- calculate_skewness(data[[col]])  # Calculate skewness
   cat(sprintf("Skewness of '%s': %.2f\n", col, skew_val))
   
-  if (skew_val > 1 && min(data[[col]], na.rm = TRUE) > 0) {  # Apply if skewness > 1 and values are positive
+  if ((skew_val > 0.5 || skew_val < -0.5) && min(data[[col]], na.rm = TRUE) > 0) {  # Adjusted threshold
     data[[paste0(col, "_log")]] <- log(data[[col]])
+    transformed_cols <- c(transformed_cols, col)
     cat(sprintf("Applied log transformation to '%s' (Skewness: %.2f).\n", col, skew_val))
   } else {
     cat(sprintf("Skipped log transformation for '%s' (Skewness: %.2f).\n", col, skew_val))
@@ -454,7 +454,7 @@ for (col in numeric_cols) {
 
 # --- Visualize Original vs. Log Transformed Data ---
 cat("\n---- Visualizing Original vs. Log Transformed Data ----\n")
-for (col in numeric_cols) {
+for (col in transformed_cols) {
   log_col <- paste0(col, "_log")
   if (log_col %in% names(data)) {  # Ensure log-transformed column exists
     plot <- ggplot() +
@@ -476,11 +476,12 @@ for (col in numeric_cols) {
 # --- Reflection on Step 5: Data Transformation ---
 cat("\n==== Reflection on Step 5: Data Transformation ====\n")
 cat(
-  "1. Log transformation was applied to numeric columns with high skewness (Skewness > 1) and positive values.\n",
-  "2. This reduces skewness, stabilizes variance, and improves linear relationships for better linear regression performance.\n",
+  "1. Log transformation was applied to numeric columns with moderate skewness (Skewness > 0.5 or < -0.5) and positive values.\n",
+  "2. This helps in reducing skewness, stabilizing variance, and potentially improving linear relationships for better model performance.\n",
   "3. Columns with low skewness or non-positive values were skipped to avoid unnecessary transformations or errors.\n",
   "4. Visualization confirmed the effectiveness of log transformation in normalizing distributions.\n"
 )
+
 # === Step 6: Feature Engineering ===
 cat("\n==== Step 6: Feature Engineering ====\n")
 
@@ -885,37 +886,93 @@ cat(
 
 # === Modeling and Evaluation ===
 
-## ---- Step 10: Prepare Data for Modeling ----
+# === Step 10: Prepare Data for Modeling ===
 cat("\n==== Step 10: Prepare Data for Modeling ====\n")
 
 # Ensure 'price' is numeric
 data$price <- as.numeric(data$price)
 
-# Remove unnecessary columns
+# --- Split the Data First to Avoid Data Leakage ---
+cat("\nSplitting the data into training and testing sets...\n")
+set.seed(123)  # For reproducibility
+trainIndex <- createDataPartition(data$price, p = 0.8, list = FALSE)
+data_train <- data[trainIndex, ]
+data_test <- data[-trainIndex, ]
+
+cat(sprintf("Training data size: %d rows\n", nrow(data_train)))
+cat(sprintf("Testing data size: %d rows\n", nrow(data_test)))
+
+# --- Remove Unnecessary Columns ---
 excluded_columns <- c("car_ID", "CarName", "CarBrand")  # IDs and textual data not needed for modeling
-data_model <- data %>% select(-all_of(excluded_columns))
+data_train <- data_train %>% select(-all_of(excluded_columns))
+data_test <- data_test %>% select(-all_of(excluded_columns))
 
-# Convert categorical variables to factors
-categorical_vars <- names(data_model)[sapply(data_model, is.character)]
-data_model[categorical_vars] <- lapply(data_model[categorical_vars], as.factor)
+# --- Convert Categorical Variables to Factors ---
+categorical_vars <- names(data_train)[sapply(data_train, is.character)]
+data_train[categorical_vars] <- lapply(data_train[categorical_vars], as.factor)
+data_test[categorical_vars] <- lapply(data_test[categorical_vars], as.factor)
 
-# Encode categorical variables using dummy variables
+# --- Encode Categorical Variables Using Dummy Variables ---
 cat("\nCreating dummy variables for categorical features...\n")
-dummies <- dummyVars(" ~ .", data = data_model)
-data_model <- data.frame(predict(dummies, newdata = data_model))
+dummies <- dummyVars(" ~ .", data = data_train)
+train_data <- data.frame(predict(dummies, newdata = data_train))
+test_data <- data.frame(predict(dummies, newdata = data_test))
 
 cat("Dummy variables created.\n")
 
-## ---- Step 11: Split the Data ----
-cat("\n==== Step 11: Splitting the Data into Training and Testing Sets ====\n")
+# --- Ensure the Same Columns in Train and Test Data ---
+missing_cols <- setdiff(names(train_data), names(test_data))
+for (col in missing_cols) {
+  test_data[[col]] <- 0
+}
+test_data <- test_data[, names(train_data)]
 
-set.seed(123)  # For reproducibility
-trainIndex <- createDataPartition(data_model$price, p = 0.8, list = FALSE)
-train_data <- data_model[trainIndex, ]
-test_data <- data_model[-trainIndex, ]
+# --- Step 11: Scaling Numeric Features ---
+cat("\n==== Step 11: Scaling Numeric Features ====\n")
 
-cat(sprintf("Training data size: %d rows\n", nrow(train_data)))
-cat(sprintf("Testing data size: %d rows\n", nrow(test_data)))
+# Identify numeric columns (excluding the target variable 'price')
+numeric_cols <- setdiff(names(train_data)[sapply(train_data, is.numeric)], "price")
+
+# Apply Min-Max Scaling to Numeric Columns using training data parameters
+cat("\nApplying Min-Max Scaling to numeric features...\n")
+preProcValues <- preProcess(train_data[, numeric_cols], method = c("range"))
+train_data[, numeric_cols] <- predict(preProcValues, train_data[, numeric_cols])
+test_data[, numeric_cols] <- predict(preProcValues, test_data[, numeric_cols])
+
+cat("Features scaled using Min-Max scaling.\n")
+
+# --- Remove Zero or Near-Zero Variance Predictors ---
+nzv <- nearZeroVar(train_data)
+if (length(nzv) > 0) {
+  cat("\nRemoving near-zero variance predictors:\n")
+  print(names(train_data)[nzv])
+  train_data <- train_data[, -nzv]
+  test_data <- test_data[, -nzv]
+}
+
+
+# --- Step 11: Scaling Numeric Features ---
+cat("\n==== Step 11: Scaling Numeric Features ====\n")
+
+# Identify numeric columns (excluding the target variable 'price')
+numeric_cols <- setdiff(names(train_data)[sapply(train_data, is.numeric)], "price")
+
+# Apply Min-Max Scaling to Numeric Columns using training data parameters
+cat("\nApplying Min-Max Scaling to numeric features...\n")
+preProcValues <- preProcess(train_data[, numeric_cols], method = c("range"))
+train_data[, numeric_cols] <- predict(preProcValues, train_data[, numeric_cols])
+test_data[, numeric_cols] <- predict(preProcValues, test_data[, numeric_cols])
+
+cat("Features scaled using Min-Max scaling.\n")
+
+# Remove Zero or Near-Zero Variance Predictors
+nzv <- nearZeroVar(train_data)
+if (length(nzv) > 0) {
+  cat("\nRemoving near-zero variance predictors:\n")
+  print(names(train_data)[nzv])
+  train_data <- train_data[, -nzv]
+  test_data <- test_data[, -nzv]
+}
 
 ## ---- Step 12: Build the Linear Regression Model ----
 cat("\n==== Step 12: Building the Linear Regression Model ====\n")
@@ -948,7 +1005,6 @@ ggplot(data.frame(Actual = test_data$price, Predicted = predictions), aes(x = Ac
   geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
   labs(title = "Actual vs Predicted Car Prices", x = "Actual Price", y = "Predicted Price") +
   theme_minimal()
-
 ## ---- Step 15: Residual Analysis ----
 cat("\n==== Step 15: Residual Analysis ====\n")
 
@@ -985,14 +1041,19 @@ ggplot(importance_df, aes(x = reorder(Feature, Importance), y = Importance)) +
 ## ---- Step 17: Interpretation of Results ----
 cat("\n==== Step 17: Interpretation of Results ====\n")
 
-cat("The linear regression model has been built and evaluated.\n")
+cat("The linear regression model has been built and evaluated after applying necessary data preprocessing steps.\n")
 cat(sprintf("RMSE on Test Data: %.2f\n", rmse))
 cat(sprintf("R-squared on Test Data: %.2f\n", r_squared))
 cat("The model explains a significant portion of the variance in car prices.\n")
 cat("Feature importance analysis identifies the most influential variables on car prices.\n")
 
+
+## ---- Step 18: Interpretation of Results ----
+cat("\n==== Step 18: Interpretation of Results ====\n")
+
+cat("The linear regression model has been built and evaluated after scaling numeric features.\n")
+cat(sprintf("RMSE on Test Data: %.2f\n", rmse))
+cat(sprintf("R-squared on Test Data: %.2f\n", r_squared))
+cat("The model explains a significant portion of the variance in car prices.\n")
+cat("Feature importance analysis identifies the most influential variables on car prices.\n")
 ```
-
-```
-
-
